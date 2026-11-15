@@ -13,6 +13,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+      - id: go
+        name: Go version from go.mod's toolchain line
+        run: echo "version=$(awk '/^toolchain go/{sub("go","",$2); print $2}' go.mod)" >> "$GITHUB_OUTPUT"
       # govulncheck itself needs a recent Go to build…
       - uses: actions/setup-go@v7
         with:
@@ -23,7 +26,12 @@ jobs:
       # vulnerabilities in that version's standard library are reported too.
       - uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version: ${{ steps.go.outputs.version }}
+      - name: Check the Go version is the one go.mod names
+        run: |
+          test -n "${{ steps.go.outputs.version }}" || (echo "go.mod has no toolchain line" && exit 1)
+          go version
+          go version | grep -q "go${{ steps.go.outputs.version }} " || (echo "expected go${{ steps.go.outputs.version }}" && exit 1)
       - name: Scan dependencies and the standard library
         run: |
           go version

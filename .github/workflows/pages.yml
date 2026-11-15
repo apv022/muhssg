@@ -19,9 +19,12 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v7
+      - id: go
+        name: Go version from go.mod's toolchain line
+        run: echo "version=$(awk '/^toolchain go/{sub("go","",$2); print $2}' go.mod)" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-go@v7
         with:
-          go-version-file: go.mod
+          go-version: ${{ steps.go.outputs.version }}
       - id: pages
         uses: actions/configure-pages@v6
       - name: Generate docs pages from README and reference
