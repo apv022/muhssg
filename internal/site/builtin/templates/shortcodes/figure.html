@@ -1,0 +1,15 @@
+{{- /* {{< figure src="photo.jpg" alt="…" caption="Some *Markdown*" >}}
+     src is looked up next to the page, then in assets/, content/ and static/.
+     Local JPEG/PNG images are resized into a responsive srcset. */ -}}
+{{- $src := .Get "src" | default (.Get 0) -}}
+{{- if not $src }}{{ errorf "figure: needs src, e.g. {{< figure src=\"photo.jpg\" >}}" }}{{ end -}}
+<figure{{ with .Get "class" }} class="{{ . }}"{{ end }}>
+  {{- if or (hasPrefix "http://" $src) (hasPrefix "https://" $src) }}
+  <img src="{{ $src }}" alt="{{ .Get "alt" }}" loading="lazy" decoding="async">
+  {{- else }}
+  {{ img .Page $src (.Get "alt") (.Get "sizes") }}
+  {{- end }}
+  {{- with .Get "caption" }}
+  <figcaption>{{ markdownInline . }}</figcaption>
+  {{- end }}
+</figure>

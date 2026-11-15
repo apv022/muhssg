@@ -1,0 +1,12 @@
+{{/* Expects a .Paginator as ".". Renders nothing when there is one page. */}}
+{{ if gt .TotalPages 1 }}
+<nav class="pagination" aria-label="Pages">
+  {{ with .PrevURL }}<a href="{{ . }}" rel="prev">← Newer</a>{{ else }}<span></span>{{ end }}
+  <ol>
+    {{ range .Links }}
+    <li>{{ if .Current }}<span aria-current="page">{{ .Number }}</span>{{ else }}<a href="{{ .URL }}">{{ .Number }}</a>{{ end }}</li>
+    {{ end }}
+  </ol>
+  {{ with .NextURL }}<a href="{{ . }}" rel="next">Older →</a>{{ else }}<span></span>{{ end }}
+</nav>
+{{ end }}

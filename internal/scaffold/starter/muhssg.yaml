@@ -19,6 +19,7 @@ collections:
     title: Writing
     sort: date          # date (newest first), title, or weight
     feed: true          # /writing/rss.xml
+    paginate: 10        # /writing/, /writing/page/2/, …
     # feedPath: /rss.xml
     # permalink: /writing/:year/:slug/
 
@@ -37,6 +38,13 @@ favicon:
 highlight:
   style: github
   darkStyle: github-dark
+
+# Local images in Markdown get resized into a responsive srcset, with
+# metadata (including GPS location) stripped.
+images:
+  widths: [480, 800, 1200, 1600]
+  quality: 82
+  sizes: "(min-width: 780px) 750px, 100vw"   # how wide images display
 
 # Anything here is available in templates as .Site.Params.
 params:

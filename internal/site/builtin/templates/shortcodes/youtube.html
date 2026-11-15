@@ -1,0 +1,11 @@
+{{- /* {{< youtube dQw4w9WgXcQ >}} or {{< youtube id="…" title="…" start="42" >}}
+     Uses youtube-nocookie.com and loads lazily. */ -}}
+{{- $id := .Get "id" | default (.Get 0) -}}
+{{- if not $id }}{{ errorf "youtube: needs a video id, e.g. {{< youtube dQw4w9WgXcQ >}}" }}{{ end -}}
+<div class="embed embed-video">
+  <iframe src="https://www.youtube-nocookie.com/embed/{{ $id }}{{ with .Get "start" }}?start={{ . }}{{ end }}"
+    title="{{ .Get "title" | default "YouTube video" }}" loading="lazy"
+    allow="accelerometer; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+    referrerpolicy="strict-origin-when-cross-origin" allowfullscreen
+    style="width:100%;aspect-ratio:16/9;border:0"></iframe>
+</div>

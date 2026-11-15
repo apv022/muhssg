@@ -9,6 +9,9 @@ Everything muhssg understands, in one place. For a tour, start with the
 - [Templates](#templates)
 - [Page](#page) · [Site](#site) · [Collection](#collection) · [Tag](#tag)
 - [Template functions](#template-functions)
+- [Shortcodes](#shortcodes)
+- [Images](#images)
+- [Pagination](#pagination)
 - [Assets](#assets)
 - [Themes](#themes)
 - [Data files](#data-files)
@@ -41,6 +44,7 @@ collections:
     feed: true                 # write an RSS feed
     feedPath: /rss.xml         # default /<collection>/rss.xml
     feedLimit: 20              # default: every entry
+    paginate: 10               # entries per list page; overrides the top-level paginate
 
 permalinks:                    # shorthand for collections.<name>.permalink
   notes: /notes/:year/:slug/
@@ -66,6 +70,14 @@ highlight:
 markdown:
   unsafe: true                 # allow raw HTML in Markdown (default true: it's your content)
   typographer: true            # “smart quotes”, en–dashes and …
+
+images:
+  widths: [480, 800, 1200, 1600]   # srcset widths (never larger than the original)
+  quality: 82                  # JPEG quality, 1–100
+  sizes: "100vw"               # default sizes attribute
+  process: true                # make local Markdown images responsive
+
+paginate: 0                    # default page size for collections and tags; 0 = one page
 
 minify: true                   # minify CSS and JS in production builds
 robots: true                   # write robots.txt unless static/ has one
@@ -192,7 +204,8 @@ even if there is no `content/index.md` or `content/404.md`.
 | `.Headings` | every heading: `.Level`, `.ID`, `.Text` |
 | `.TOC` | h2–h4 headings that have an ID |
 | `.WordCount`, `.ReadingTime` | reading time in whole minutes, at least 1 |
-| `.Pages` | entries of a list page, or pages of a tag |
+| `.Pages` | every entry of a list page, or every page of a tag |
+| `.Paginator` | list and tag pages: the entries for this page number (see [Pagination](#pagination)) |
 | `.Prev`, `.Next` | neighbours in the collection's sort order |
 | `.Source` | path of the content file |
 | `.Site` | the site |
@@ -267,14 +280,27 @@ exist.
 | `where "Tag" "go" pages` | filter by `Section`, `Kind` or `Tag` |
 | `groupByYear pages` | `[]{ .Year, .Pages }`, in the pages' order |
 
+**Images** (see [Images](#images))
+
+| Function | |
+| --- | --- |
+| `img "path" "alt" ["sizes"] ["class"]` | a responsive `<img>` with `srcset`, `width`/`height` and lazy loading |
+| `img .Page "photo.jpg" "alt"` | the same, looking next to that page first (page bundles) |
+| `image "path"` | an image with `.URL`, `.Width`, `.Height` and `.Resize 400` |
+
 **Dates**: `date "Jan 2, 2006" .Date` uses
 [Go's reference date](https://pkg.go.dev/time#pkg-constants). `isoDate .Date`
 gives `2006-01-02`. `now` is the build time. A zero date formats as an empty
 string.
 
-**Text**: `markdown`, `plainify` (strip tags), `truncate N`, `lower`, `upper`,
-`trim`, `replace "old" "new"`, `split ","`, `join ", " list`, `contains`,
-`hasPrefix`, `hasSuffix`.
+**Text**: `markdown` (shortcodes work inside it too), `markdownInline` (no
+wrapping `<p>`), `plainify` (strip tags), `truncate N`, `lower`, `upper`,
+`trim`, `replace "old" "new"`, `split ","`, `join ", " list`, and
+`contains`, `hasPrefix` and `hasSuffix`, which take the pattern first so they
+chain: `{{ if .Title | hasPrefix "Draft" }}`.
+
+`errorf "message %s" value` stops the build with an error, which is useful
+for checking shortcode parameters.
 
 **Values**: `default "fallback" value`, `dict "k" v …`, `list a b …`,
 `jsonify` (safe for `<script>`), `add`, `sub`.
@@ -284,6 +310,103 @@ string.
 
 Go templates also have `len`, `index`, `slice`, `printf`, `eq`, `ne`, `lt`,
 `gt`, `and`, `or` and `not` built in.
+
+## Shortcodes
+
+```markdown
+{{< name positional key="value" other='single quotes' >}}
+{{< name >}}Markdown between the tags.{{< /name >}}
+{{< name key="value" />}}
+```
+
+- **Templates.** A shortcode is rendered by `templates/shortcodes/<name>.html`,
+  looked up in the site, then each theme, then muhssg's built-ins.
+- **Pairing.** A tag with a matching closing tag gets the text in between as
+  `.Inner`. Paired shortcodes can nest, including inside other paired ones.
+- **Code is left alone.** Shortcodes don't run in fenced code blocks or
+  inline code. Outside code, `{{</* name */>}}` prints `{{< name >}}`.
+- **Placement.** A shortcode alone on its line replaces the whole paragraph,
+  so block HTML like `<div>` isn't wrapped in a `<p>`.
+- **Errors** name the file and line, e.g. an unknown shortcode or an unclosed
+  `{{<`.
+
+In a shortcode template, `.` is the shortcode:
+
+| Field | |
+| --- | --- |
+| `.Name` | the shortcode's name |
+| `.Get "key"` | a named parameter, or `""` |
+| `.Get 0` | the first positional parameter, or `""` |
+| `.Has "key"` | whether a named parameter was given |
+| `.Params` | all named parameters |
+| `.Inner` | the raw text between the tags |
+| `.InnerHTML` | `.Inner` rendered as Markdown (with shortcodes) |
+| `.InnerInline` | the same, without the wrapping `<p>`, for use mid-sentence |
+| `.Page`, `.Site` | the page being rendered, and the site |
+
+Built-in shortcodes:
+
+| Shortcode | Parameters |
+| --- | --- |
+| `youtube` | video id (positional or `id`), `title`, `start` (seconds) |
+| `vimeo` | video id (positional or `id`), `title` |
+| `figure` | `src`, `alt`, `caption` (Markdown), `sizes`, `class` |
+| `img` | `src`, `alt`, `sizes`, `class` |
+| `note` | `type` (`note`, `tip`, `warning`, `danger`), `title`; Markdown inside |
+| `details` | `summary`, `open="true"`; Markdown inside |
+
+`note` outputs `<aside class="note note-<type>">`, so style `.note` in your
+CSS.
+
+## Images
+
+Local `![alt](src)` images in Markdown, the `figure` and `img` shortcodes,
+and the `img` and `image` functions all go through the same pipeline:
+
+- **Lookup.** The path is looked up next to the page's content file first
+  (page bundles), then in `assets/`, `content/` and `static/` of the site and
+  each theme.
+- **JPEG and PNG** are decoded, rotated according to their EXIF orientation,
+  resized to each of `images.widths` smaller than the original, and
+  re-encoded. Re-encoding strips all metadata, including GPS location. The
+  original file is not copied to the output.
+- **GIF and SVG** are published unchanged.
+- **Output** goes to `/_assets/images/<path>-<hash>-<width>.<ext>`.
+- **The `src`** defaults to the largest configured width (or the original, if
+  it's smaller), and `srcset` lists every variant.
+- **Caching.** Resized images are cached in your user cache folder (e.g.
+  `~/.cache/muhssg/images`), so rebuilds are fast.
+- **Remote images** (`https://…`) are left as they are.
+- **Missing local images** in Markdown are left alone, and `muhssg check`
+  reports them. In templates and shortcodes, a missing image stops the build.
+
+Set `images.process: false` to leave Markdown images untouched.
+
+## Pagination
+
+With `paginate: N` (top level, or per collection), list and tag pages are
+split:
+
+| Page | URL |
+| --- | --- |
+| entries 1…N | `/writing/` |
+| entries N+1…2N | `/writing/page/2/` |
+| … | `/writing/page/<n>/` |
+
+`/writing/page/1/` redirects to `/writing/`. Only the first page shows the
+`_index.md` content.
+
+`.Paginator` on list and tag pages:
+
+| Field | |
+| --- | --- |
+| `.Items` | the entries on this page |
+| `.PageNumber`, `.TotalPages` | 1-based |
+| `.PerPage`, `.TotalItems` | |
+| `.HasPrev`, `.HasNext` | |
+| `.PrevURL`, `.NextURL` | `""` when there is none |
+| `.FirstURL`, `.LastURL` | |
+| `.Links` | every page: `.Number`, `.URL`, `.Current` |
 
 ## Assets
 
@@ -339,6 +462,8 @@ several sites.
 | `/<page>/index.html` | every page |
 | `/404.html` | not-found page (marked `noindex`) |
 | `/_assets/…` | bundled and hashed assets |
+| `/_assets/images/…` | resized images |
+| `/<collection>/page/<n>/` | further pages of a paginated list |
 | `/<collection>/rss.xml` | feeds (or `feedPath`) |
 | `/sitemap.xml` | every page except 404, drafts and `noindex` pages |
 | `/robots.txt` | allows everything and points at the sitemap |

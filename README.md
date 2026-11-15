@@ -38,6 +38,9 @@ config and a different theme gives the whole site a new look.
 - [A site, folder by folder](#a-site-folder-by-folder)
 - [Writing content](#writing-content)
 - [Templates](#templates)
+- [Shortcodes](#shortcodes)
+- [Images](#images)
+- [Pagination](#pagination)
 - [CSS, JavaScript and TypeScript](#css-javascript-and-typescript)
 - [Themes](#themes)
 - [Favicons, feeds, sitemap and redirects](#favicons-feeds-sitemap-and-redirects)
@@ -53,6 +56,9 @@ config and a different theme gives the whole site a new look.
 | **Content** | Markdown with tables, footnotes, task lists, definition lists and smart quotes. Raw HTML pages when Markdown isn't enough. |
 | **Collections** | Every folder in `content/` becomes a collection, with a list page, prev/next links, tags and an RSS feed. |
 | **Drafts** | `draft: true` posts show up in `muhssg serve` and never in `muhssg build`. |
+| **Shortcodes** | `{{< youtube … >}}`, `{{< figure … >}}`, `{{< note >}}…{{< /note >}}` and your own snippets, right inside Markdown. |
+| **Images** | Local images are resized into a responsive `srcset` with width/height and lazy loading. Phone photos are rotated correctly and stripped of metadata, including GPS location. |
+| **Pagination** | `paginate: 10` splits a collection or tag across `/writing/page/2/`, `/writing/page/3/` and so on. |
 | **Syntax highlighting** | Done at build time with no JavaScript, using separate light and dark styles. |
 | **Assets** | CSS `@import`s and JS/TS imports are bundled by [esbuild](https://esbuild.github.io), minified and given content-hashed file names. npm packages work if you install them. |
 | **Themes** | Layered folders: the site overrides the theme, and a theme can override another theme. A theme can be as small as one CSS file. |
@@ -182,6 +188,83 @@ There are 45 template functions, including `collection`, `first`,
 `where`, `sortBy`, `groupByYear`, `date`, `markdown`, `truncate`, `asset`,
 `absURL`, `active` and `jsonify`. They're all listed in the
 [reference](docs/reference.md#template-functions).
+
+## Shortcodes
+
+Shortcodes are ready-made snippets you drop into Markdown. muhssg replaces
+each one with HTML from a template:
+
+```markdown
+{{< youtube dQw4w9WgXcQ >}}
+
+{{< figure src="photo.jpg" alt="The view" caption="Taken from the **roof**." >}}
+
+{{< note type="warning" title="Heads up" >}}
+Any *Markdown* goes in here.
+{{< /note >}}
+```
+
+| Built in | Does |
+| --- | --- |
+| `youtube`, `vimeo` | Privacy-friendly, lazy-loaded video embeds. |
+| `figure` | A responsive image with an optional Markdown caption. |
+| `img` | A responsive image with control over `sizes` and `class`. |
+| `note` | A callout box (`note`, `tip`, `warning` or `danger`). |
+| `details` | A collapsible section that works without JavaScript. |
+
+Make your own by adding `templates/shortcodes/<name>.html`. Inside the
+template, `.Get "key"` (or `.Get 0` for positional values) reads parameters,
+and `.InnerHTML` renders the Markdown between the opening and closing tag.
+Files with the same name replace the built-in ones.
+
+Shortcodes don't run inside code blocks or inline code, and
+`{{</* name */>}}` prints a shortcode without running it.
+
+## Images
+
+Write images the usual way. Local ones are processed automatically:
+
+```markdown
+![The view from the roof](roof.jpg)
+```
+
+Put `roof.jpg` next to the post (`content/writing/my-post/roof.jpg`) or in
+`assets/`. muhssg then:
+
+- **resizes it** to each width in `images.widths` (480, 800, 1200 and 1600
+  by default) and writes a `srcset`, so phones download small files. Images
+  are never enlarged.
+- **adds `width` and `height`**, so the page doesn't jump while it loads, plus
+  `loading="lazy"` and `decoding="async"`.
+- **rotates phone photos** according to their EXIF orientation.
+- **strips metadata** by re-encoding, so camera details and GPS location are
+  never published. The original file isn't copied to the output.
+
+In templates, `{{ img "photos/roof.jpg" "Alt text" }}` produces the same
+responsive tag, and `{{ (image "photos/roof.jpg").Resize 400 }}` gives you a
+single resized image with `.URL`, `.Width` and `.Height`. JPEG and PNG are
+resized. GIF and SVG are published as they are. Resized images are cached
+between builds.
+
+## Pagination
+
+```yaml
+collections:
+  writing:
+    paginate: 10      # or set paginate: 10 at the top level for every list and tag
+```
+
+`/writing/` shows the newest 10 entries, `/writing/page/2/` the next 10, and
+so on. List and tag templates get a `.Paginator`:
+
+```html
+{{ range .Paginator.Items }}<a href="{{ .URL }}">{{ .Title }}</a>{{ end }}
+{{ with .Paginator.NextURL }}<a href="{{ . }}" rel="next">Older</a>{{ end }}
+```
+
+`.Paginator` also has `.PrevURL`, `.Links` (for numbered page links),
+`.PageNumber` and `.TotalPages`. Without `paginate`, there's a single page
+holding every entry, so templates can use `.Paginator.Items` either way.
 
 ## CSS, JavaScript and TypeScript
 

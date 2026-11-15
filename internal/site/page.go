@@ -51,13 +51,15 @@ type Page struct {
 	WordCount   int
 	Source      string // path relative to content/, "" for generated pages
 
-	Pages []*Page // children: entries of a list page, pages of a tag
-	Prev  *Page   // previous entry in the collection's order
-	Next  *Page   // next entry in the collection's order
-	Site  *Site
+	Pages     []*Page    // children: every entry of a list page, or every page of a tag
+	Paginator *Paginator // list and tag pages: the entries for this page number
+	Prev      *Page      // previous entry in the collection's order
+	Next      *Page      // next entry in the collection's order
+	Site      *Site
 
-	body   []byte
-	isHTML bool
+	body    []byte
+	isHTML  bool
+	summary string // summary from front matter, applied after rendering
 }
 
 // Permalink is the absolute URL of the page (needs baseURL).

@@ -39,6 +39,20 @@ const greet = (name: string): string => `hello, ${name}`;
 
 Footnotes work too.[^1]
 
+## Shortcodes
+
+Shortcodes drop ready-made pieces into Markdown, like this note:
+
+{{< note type="tip" title="Tip" >}}
+Write `{{< note >}}…{{< /note >}}` around any **Markdown**. muhssg
+also ships `youtube`, `vimeo`, `figure`, `img` and `details`, and you can add
+your own in `templates/shortcodes/`.
+{{< /note >}}
+
+{{< details summary="And this is a details block" >}}
+It opens and closes without any JavaScript.
+{{< /details >}}
+
 ## Drafts
 
 Set `draft: true` in the front matter to keep a post out of the build. It

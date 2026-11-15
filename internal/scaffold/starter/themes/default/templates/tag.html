@@ -3,5 +3,6 @@
   <p class="eyebrow"><a href="{{ relURL "/tags/" }}">Tags</a></p>
   <h1>#{{ .Title }}</h1>
 </header>
-{{ template "partials/post-list.html" .Pages }}
+{{ template "partials/post-list.html" .Paginator.Items }}
+{{ template "partials/pager.html" .Paginator }}
 {{ end }}

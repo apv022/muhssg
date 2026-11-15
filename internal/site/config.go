@@ -32,6 +32,8 @@ type Config struct {
 	Favicon     FaviconConfig               `yaml:"favicon"`
 	Highlight   HighlightConfig             `yaml:"highlight"`
 	Markdown    MarkdownConfig              `yaml:"markdown"`
+	Images      ImagesConfig                `yaml:"images"`
+	Paginate    int                         `yaml:"paginate"` // default page size for lists and tags; 0 = no pagination
 	Minify      *bool                       `yaml:"minify"`
 	Robots      *bool                       `yaml:"robots"`
 	Params      map[string]any              `yaml:"params"`
@@ -52,6 +54,7 @@ type CollectionConfig struct {
 	Feed        bool   `yaml:"feed"`
 	FeedPath    string `yaml:"feedPath"`
 	FeedLimit   int    `yaml:"feedLimit"`
+	Paginate    *int   `yaml:"paginate"` // entries per list page; overrides the site-wide paginate
 }
 
 // FaviconConfig turns one source image into a full favicon set.
@@ -161,7 +164,18 @@ func (c *Config) normalize() error {
 	if c.Params == nil {
 		c.Params = map[string]any{}
 	}
+	if c.Paginate < 0 {
+		return fmt.Errorf("paginate: must be 0 (off) or more, got %d", c.Paginate)
+	}
+	for _, w := range c.Images.Widths {
+		if w <= 0 {
+			return fmt.Errorf("images.widths: %d is not a positive width", w)
+		}
+	}
 	for name, cc := range c.Collections {
+		if cc.Paginate != nil && *cc.Paginate < 0 {
+			return fmt.Errorf("collections.%s.paginate: must be 0 (off) or more", name)
+		}
 		switch cc.Sort {
 		case "", "date", "title", "weight":
 		default:
@@ -242,6 +256,10 @@ func (c *Config) Collection(name string) CollectionConfig {
 	}
 	if cc.Permalink == "" {
 		cc.Permalink = c.Permalinks[name]
+	}
+	if cc.Paginate == nil {
+		n := c.Paginate
+		cc.Paginate = &n
 	}
 	if cc.Feed && cc.FeedPath == "" {
 		cc.FeedPath = "/" + name + "/rss.xml"

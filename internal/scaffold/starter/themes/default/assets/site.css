@@ -64,6 +64,26 @@ h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; letter-spacing:
 .pager { display: flex; justify-content: space-between; gap: 16px; max-width: var(--measure); margin-top: 56px; padding-top: 20px; border-top: 1px solid var(--line); }
 .tag-cloud { display: flex; flex-wrap: wrap; gap: 10px 22px; padding: 0; list-style: none; }
 
+.pagination { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-top: 40px; font-family: var(--font-mono); font-size: .9rem; }
+.pagination ol { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.pagination ol a, .pagination ol span { display: inline-block; min-width: 2em; padding: 2px 6px; text-align: center; border-radius: 4px; }
+.pagination [aria-current="page"] { background: var(--accent); color: var(--accent-text); }
+
+/* shortcodes: note, figure, details, video embeds */
+.prose figure { margin-inline: 0; }
+.prose figcaption { margin-top: 8px; color: var(--muted); font-size: .9rem; }
+.prose img { border-radius: var(--radius); }
+.note { padding: 14px 18px; border-left: 4px solid var(--accent); border-radius: var(--radius); background: var(--surface); }
+.note > :first-child { margin-top: 0; }
+.note > :last-child { margin-bottom: 0; }
+.note-tip { border-left-color: #2f9e6e; }
+.note-warning { border-left-color: #d98a00; }
+.note-danger { border-left-color: #d0342c; }
+.note-title { margin: 0 0 6px; }
+.prose details { padding: 10px 14px; border: 1px solid var(--line); border-radius: var(--radius); }
+.prose summary { cursor: pointer; font-weight: 600; }
+.embed { overflow: hidden; border-radius: var(--radius); background: var(--surface); }
+
 .copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--muted); font: .75rem var(--font-mono); cursor: pointer; opacity: 0; transition: opacity .15s; }
 pre:hover .copy-button, .copy-button:focus-visible { opacity: 1; }
 

@@ -54,6 +54,22 @@ func write(t *testing.T, path, content string) {
 	}
 }
 
+// testPNG returns a w×h PNG as a string.
+func testPNG(t *testing.T, w, h int) string {
+	t.Helper()
+	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	for y := 0; y < h; y++ {
+		for x := 0; x < w; x++ {
+			img.Set(x, y, color.RGBA{uint8(x * 4), uint8(y * 4), 128, 255})
+		}
+	}
+	var buf bytes.Buffer
+	if err := png.Encode(&buf, img); err != nil {
+		t.Fatal(err)
+	}
+	return buf.String()
+}
+
 func exists(path string) bool { _, err := os.Stat(path); return err == nil }
 
 func mustContain(t *testing.T, label, s string, wants ...string) {
@@ -260,15 +276,21 @@ func TestPermalinksAliasesBundlesAndHTMLPages(t *testing.T) {
 	cfg = strings.Replace(cfg, "    # permalink: /writing/:year/:slug/", "    permalink: /writing/:year/:slug/", 1)
 	write(t, filepath.Join(root, "muhssg.yaml"), cfg)
 	write(t, filepath.Join(root, "content/writing/trip/index.md"), "---\ntitle: Trip\ndate: 2025-06-01\naliases: [/old-trip/]\n---\n![photo](photo.png)\n")
-	write(t, filepath.Join(root, "content/writing/trip/photo.png"), "png")
+	write(t, filepath.Join(root, "content/writing/trip/photo.png"), testPNG(t, 40, 30))
+	write(t, filepath.Join(root, "content/writing/trip/notes.pdf"), "%PDF-1.4")
 	write(t, filepath.Join(root, "content/lab.html"), "---\ntitle: Lab\nlayout: page\n---\n<div id=\"app\">interactive</div>\n")
 	_, out := build(t, root, site.Options{})
-	for _, f := range []string{"writing/2026/hello-world/index.html", "writing/2025/trip/index.html", "writing/trip/photo.png", "old-trip/index.html", "lab/index.html"} {
+	for _, f := range []string{"writing/2026/hello-world/index.html", "writing/2025/trip/index.html", "writing/trip/notes.pdf", "old-trip/index.html", "lab/index.html"} {
 		if !exists(filepath.Join(out, f)) {
 			t.Errorf("missing %s", f)
 		}
 	}
 	mustContain(t, "alias", read(t, filepath.Join(out, "old-trip/index.html")), "url=/writing/2025/trip/")
+	// The bundle image went through the image pipeline instead of being copied.
+	if exists(filepath.Join(out, "writing/trip/photo.png")) {
+		t.Error("processed image original was copied to the output")
+	}
+	mustContain(t, "trip", read(t, filepath.Join(out, "writing/2025/trip/index.html")), `width="40" height="30" loading="lazy"`)
 	mustContain(t, "lab", read(t, filepath.Join(out, "lab/index.html")), `<div id="app">interactive</div>`)
 }
 

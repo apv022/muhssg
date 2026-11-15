@@ -175,13 +175,16 @@ func render(cfg *Config, out string, opts Options, res *Result) (*Site, error) {
 	if site.Data, err = loadData(cfg); err != nil {
 		return nil, err
 	}
-	md := newMarkdown(cfg)
-	env := &renderEnv{site: site, manifest: manifest, favicons: favs, md: func(src string) (string, error) {
-		r, err := RenderMarkdown(md, []byte(src))
-		return r.HTML, err
-	}}
+	images := newImageProc(cfg, out)
+	env := &renderEnv{site: site, manifest: manifest, favicons: favs, images: images}
+	content := &contentRenderer{site: site, md: newMarkdown(cfg), images: images}
+	env.content = content
 	tmpl, err := parseTemplates(sources, env.funcs())
 	if err != nil {
+		return nil, err
+	}
+	content.tmpl = tmpl
+	if err := content.renderAll(); err != nil {
 		return nil, err
 	}
 
@@ -208,9 +211,15 @@ func render(cfg *Config, out string, opts Options, res *Result) (*Site, error) {
 	}
 
 	// 6. Files that live next to content (images in page bundles, etc.).
+	// Images that went through the image pipeline are published resized and
+	// without metadata; their originals are not copied.
 	contentDir := filepath.Join(cfg.Root, "content")
 	for _, rel := range files {
-		if err := copyFile(filepath.Join(contentDir, filepath.FromSlash(rel)), filepath.Join(out, filepath.FromSlash(rel))); err != nil {
+		src := filepath.Join(contentDir, filepath.FromSlash(rel))
+		if images.used[src] {
+			continue
+		}
+		if err := copyFile(src, filepath.Join(out, filepath.FromSlash(rel))); err != nil {
 			return nil, err
 		}
 	}

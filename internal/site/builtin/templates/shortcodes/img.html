@@ -1,0 +1,4 @@
+{{- /* {{< img src="photo.jpg" alt="…" sizes="(min-width: 800px) 720px, 100vw" class="…" >}} */ -}}
+{{- $src := .Get "src" | default (.Get 0) -}}
+{{- if not $src }}{{ errorf "img: needs src, e.g. {{< img src=\"photo.jpg\" alt=\"…\" >}}" }}{{ end -}}
+{{ img .Page $src (.Get "alt") (.Get "sizes") (.Get "class") }}

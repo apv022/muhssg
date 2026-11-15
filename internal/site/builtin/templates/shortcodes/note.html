@@ -1,0 +1,8 @@
+{{- /* {{< note >}}Markdown here.{{< /note >}}
+     {{< note type="warning" title="Careful" >}}…{{< /note >}}
+     type: note (default), tip, warning or danger. Style .note and .note-<type> in your CSS. */ -}}
+{{- $type := .Get "type" | default "note" -}}
+<aside class="note note-{{ $type }}" role="note">
+  {{- with .Get "title" }}<p class="note-title"><strong>{{ . }}</strong></p>{{ end }}
+  {{ .InnerHTML }}
+</aside>

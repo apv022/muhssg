@@ -1,0 +1,6 @@
+{{- /* {{< details summary="Show more" >}}Hidden **Markdown**.{{< /details >}}
+     Add open="true" to start expanded. Works without JavaScript. */ -}}
+<details{{ if eq (.Get "open") "true" }} open{{ end }}>
+  <summary>{{ .Get "summary" | default (.Get 0) | default "Details" }}</summary>
+  {{ .InnerHTML }}
+</details>

@@ -3,7 +3,6 @@ package site
 import (
 	"encoding/json"
 	"fmt"
-	"html/template"
 	"os"
 	"path"
 	"path/filepath"
@@ -12,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/yuin/goldmark"
 	"gopkg.in/yaml.v3"
 )
 
@@ -111,7 +109,6 @@ func buildModel(cfg *Config, raws []rawPage, opts modelOptions) (*Site, error) {
 		Config:      cfg,
 		aliases:     map[string]string{},
 	}
-	md := newMarkdown(cfg)
 	listMeta := map[string]*rawPage{}
 
 	for i := range raws {
@@ -205,9 +202,7 @@ func buildModel(cfg *Config, raws []rawPage, opts modelOptions) (*Site, error) {
 				p.Title = titleFromSlug(p.Slug)
 			}
 		}
-		if err := renderBody(md, p, r.meta.Summary); err != nil {
-			return nil, fmt.Errorf("content/%s: %w", r.rel, err)
-		}
+		p.summary = r.meta.Summary
 		s.Pages = append(s.Pages, p)
 		if p.Kind == KindHome {
 			s.Home = p
@@ -270,15 +265,14 @@ func buildModel(cfg *Config, raws []rawPage, opts modelOptions) (*Site, error) {
 				lp.Path = cleanURLPath(r.meta.Permalink)
 			}
 			lp.body, lp.isHTML = r.body, r.isHTML
-			if err := renderBody(md, lp, r.meta.Summary); err != nil {
-				return nil, fmt.Errorf("content/%s: %w", r.rel, err)
-			}
+			lp.summary = r.meta.Summary
 		}
 		if len(c.Pages) > 0 && lp.Date.IsZero() {
 			lp.Date = latest(c.Pages)
 		}
 		c.List = lp
 		s.Pages = append(s.Pages, lp)
+		s.Pages = append(s.Pages, paginate(s, lp, c.Pages, *c.Config.Paginate)...)
 		if c.Config.Feed {
 			s.feeds = append(s.feeds, feedInfo{Title: c.Title, Path: cleanURLPath(c.Config.FeedPath), Coll: c})
 		}
@@ -308,10 +302,12 @@ func buildModel(cfg *Config, raws []rawPage, opts modelOptions) (*Site, error) {
 		sortPages(t.Pages, "date", "desc")
 		s.Tags = append(s.Tags, t)
 		if opts.hasTemplate("tag.html") {
-			s.Pages = append(s.Pages, &Page{
+			tp := &Page{
 				Kind: KindTag, Title: t.Name, Slug: t.Slug, Path: "/tags/" + t.Slug + "/",
 				Pages: t.Pages, Params: map[string]any{"tag": t}, Site: s,
-			})
+			}
+			s.Pages = append(s.Pages, tp)
+			s.Pages = append(s.Pages, paginate(s, tp, t.Pages, cfg.Paginate)...)
 		}
 	}
 	if len(s.Tags) > 0 && opts.hasTemplate("tags.html") {
@@ -399,27 +395,6 @@ func withBasePath(html, basePath string) string {
 	}
 	html = rootLink.ReplaceAllString(html, "${1}"+basePath+"/${2}")
 	return strings.NewReplacer(`href="/"`, `href="`+basePath+`/"`, `href='/'`, `href='`+basePath+`/'`).Replace(html)
-}
-
-func renderBody(md goldmark.Markdown, p *Page, summary string) error {
-	bp := p.Site.Config.BasePath
-	if p.isHTML {
-		p.Content = template.HTML(withBasePath(string(p.body), bp))
-		p.Summary = summary
-		return nil
-	}
-	r, err := RenderMarkdown(md, p.body)
-	if err != nil {
-		return err
-	}
-	p.Content = template.HTML(withBasePath(r.HTML, bp))
-	p.Headings = r.Headings
-	p.WordCount = r.WordCount
-	p.Summary = r.Summary
-	if summary != "" {
-		p.Summary = summary
-	}
-	return nil
 }
 
 func sortedKeys[V any](m map[string]V) []string {

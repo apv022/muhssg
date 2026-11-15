@@ -2,6 +2,7 @@ package site
 
 import (
 	"bytes"
+	"embed"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -15,6 +16,9 @@ import (
 	"time"
 )
 
+//go:embed builtin/templates
+var builtinFS embed.FS
+
 // templateSource is one template file after layering.
 type templateSource struct {
 	name string // slash path relative to templates/, e.g. "writing/single.html"
@@ -26,6 +30,22 @@ type templateSource struct {
 // (the site) override later ones (themes).
 func loadTemplateSources(cfg *Config) (map[string]templateSource, error) {
 	out := map[string]templateSource{}
+	// Built-in shortcodes are the lowest layer: any theme or site can override them.
+	err := fs.WalkDir(builtinFS, "builtin/templates", func(p string, d fs.DirEntry, err error) error {
+		if err != nil || d.IsDir() {
+			return err
+		}
+		raw, err := builtinFS.ReadFile(p)
+		if err != nil {
+			return err
+		}
+		name := strings.TrimPrefix(p, "builtin/templates/")
+		out[name] = templateSource{name: name, file: "(built-in) templates/" + name, text: string(raw)}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
 	layers := cfg.LayerDirs()
 	for i := len(layers) - 1; i >= 0; i-- {
 		dir := filepath.Join(layers[i], "templates")
@@ -56,12 +76,15 @@ func isShared(name string) bool {
 	return name == "base.html" || strings.HasPrefix(name, "partials/")
 }
 
+func isShortcode(name string) bool { return strings.HasPrefix(name, "shortcodes/") }
+
 // templates holds one parsed set per layout. Each set contains base.html,
 // every partial, and the layout itself.
 type templates struct {
-	sets    map[string]*template.Template
-	entry   map[string]string // layout -> template to execute
-	sources map[string]templateSource
+	sets       map[string]*template.Template
+	shortcodes map[string]*template.Template
+	entry      map[string]string // layout -> template to execute
+	sources    map[string]templateSource
 }
 
 func parseTemplates(sources map[string]templateSource, funcs template.FuncMap) (*templates, error) {
@@ -76,9 +99,21 @@ func parseTemplates(sources map[string]templateSource, funcs template.FuncMap) (
 			return nil, templateError(src, err)
 		}
 	}
-	t := &templates{sets: map[string]*template.Template{}, entry: map[string]string{}, sources: sources}
+	t := &templates{sets: map[string]*template.Template{}, shortcodes: map[string]*template.Template{}, entry: map[string]string{}, sources: sources}
 	for _, name := range names {
 		if isShared(name) {
+			continue
+		}
+		if isShortcode(name) {
+			src := sources[name]
+			set, err := shared.Clone()
+			if err != nil {
+				return nil, err
+			}
+			if _, err := set.New(name).Parse(src.text); err != nil {
+				return nil, templateError(src, err)
+			}
+			t.shortcodes[name] = set
 			continue
 		}
 		src := sources[name]
@@ -124,7 +159,7 @@ func templateError(src templateSource, err error) error {
 
 func (t *templates) has(name string) bool {
 	_, ok := t.sources[name]
-	return ok && !isShared(name)
+	return ok && !isShared(name) && !isShortcode(name)
 }
 
 // candidates lists the layouts tried for a page, most specific first.
@@ -187,7 +222,35 @@ type renderEnv struct {
 	site     *Site
 	manifest Manifest
 	favicons faviconSet
-	md       func(string) (string, error)
+	content  *contentRenderer
+	images   *imageProc
+}
+
+// splitPageArg lets image functions take an optional page first:
+// img "photo.jpg" "alt" or img .Page "photo.jpg" "alt".
+func splitPageArg(name string, args []any) (*Page, []string, error) {
+	var p *Page
+	if len(args) > 0 {
+		if pg, ok := args[0].(*Page); ok {
+			p, args = pg, args[1:]
+		}
+	}
+	out := make([]string, len(args))
+	for i, a := range args {
+		switch v := a.(type) {
+		case string:
+			out[i] = v
+		case template.HTML:
+			out[i] = string(v)
+		case nil:
+		default:
+			return nil, nil, fmt.Errorf("%s: argument %d is a %T, not a string", name, i+1, a)
+		}
+	}
+	if len(out) == 0 || out[0] == "" {
+		return nil, nil, fmt.Errorf("%s: needs an image path", name)
+	}
+	return p, out, nil
 }
 
 func (e *renderEnv) asset(name string) (string, error) {
@@ -335,8 +398,34 @@ func (e *renderEnv) funcs() template.FuncMap {
 
 		// text
 		"markdown": func(src string) (template.HTML, error) {
-			out, err := e.md(src)
+			out, err := e.content.renderFragment(nil, src, 1)
 			return template.HTML(out), err
+		},
+		"markdownInline": func(src string) (template.HTML, error) {
+			out, err := e.content.renderFragment(nil, src, 1)
+			return template.HTML(stripParagraph(out)), err
+		},
+		"errorf": func(format string, args ...any) (string, error) {
+			return "", fmt.Errorf(format, args...)
+		},
+
+		// images
+		"image": func(args ...any) (*Image, error) {
+			p, a, err := splitPageArg("image", args)
+			if err != nil {
+				return nil, err
+			}
+			return e.images.original(p, a[0])
+		},
+		"img": func(args ...any) (template.HTML, error) {
+			p, a, err := splitPageArg("img", args)
+			if err != nil {
+				return "", err
+			}
+			for len(a) < 4 {
+				a = append(a, "")
+			}
+			return e.images.imgTag(p, a[0], a[1], a[2], a[3])
 		},
 		"plainify": func(s string) string { return collapseSpace(tagRe.ReplaceAllString(s, " ")) },
 		"truncate": func(n int, s string) string { return Truncate(s, n) },
@@ -358,9 +447,10 @@ func (e *renderEnv) funcs() template.FuncMap {
 			}
 			return "", fmt.Errorf("join: cannot join %T", v)
 		},
-		"contains":  strings.Contains,
-		"hasPrefix": strings.HasPrefix,
-		"hasSuffix": strings.HasSuffix,
+		// pattern first, so they chain: {{ if .Title | contains "Go" }}
+		"contains":  func(sub, s string) bool { return strings.Contains(s, sub) },
+		"hasPrefix": func(prefix, s string) bool { return strings.HasPrefix(s, prefix) },
+		"hasSuffix": func(suffix, s string) bool { return strings.HasSuffix(s, suffix) },
 
 		// values
 		"default": func(def, v any) any {
