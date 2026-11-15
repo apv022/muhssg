@@ -99,7 +99,7 @@ code, pre { font-family: var(--mono); }
 .docs-nav a[aria-current="page"]::before { content: "▌"; color: var(--crimson); }
 .docs-nav .toc a { color: var(--dim); }
 .docs-nav .toc a:hover { color: var(--text); }
-.docs-body { max-width: 860px; }
+.docs-body { min-width: 0; max-width: 860px; }
 h1 { margin: 0; color: var(--text); font: 800 clamp(2.2rem, 5vw, 3.2rem)/1.1 var(--mono); letter-spacing: -.02em; }
 .lede { margin: 14px 0 36px; color: var(--muted); font-size: 1.15rem; }
 .doc-list { margin: 32px 0 0; padding: 0; list-style: none; border-top: 2px solid var(--line); }
@@ -107,7 +107,7 @@ h1 { margin: 0; color: var(--text); font: 800 clamp(2.2rem, 5vw, 3.2rem)/1.1 var
 .doc-list a { font: 700 1.1rem var(--mono); text-decoration: none; }
 .doc-list p { margin: 6px 0 0; color: var(--muted); }
 
-.prose { color: var(--prose); }
+.prose { color: var(--prose); overflow-wrap: break-word; }
 .prose > * + * { margin-top: 1.1em; }
 .prose h2 { margin-top: 2.4em; padding-top: 12px; border-top: 2px solid var(--line); color: var(--text); font: 700 1.5rem var(--mono); scroll-margin-top: 80px; }
 .prose h2::before { content: "## "; color: var(--crimson); }
@@ -128,11 +128,11 @@ h1 { margin: 0; color: var(--text); font: 800 clamp(2.2rem, 5vw, 3.2rem)/1.1 var
 pre:hover .copy-button, .copy-button:focus-visible { opacity: 1; }
 
 @media (max-width: 900px) {
-  .docs { grid-template-columns: 1fr; gap: 24px; }
+  .docs { grid-template-columns: minmax(0, 1fr); gap: 24px; }
   .docs-nav { position: static; max-height: none; }
   .docs-nav .toc, .docs-nav .toc + * { display: none; }
   .docs-nav .label:nth-of-type(2) { display: none; }
-  .split { grid-template-columns: 1fr; }
+  .split { grid-template-columns: minmax(0, 1fr); }
 }
 @media (max-width: 560px) {
   .header-inner { justify-content: center; padding-block: 10px; }

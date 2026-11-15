@@ -38,7 +38,7 @@ h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; letter-spacing:
 .section { margin-top: 56px; }
 .more { font-family: var(--font-mono); font-size: .9rem; }
 
-.prose { max-width: var(--measure); }
+.prose { max-width: var(--measure); overflow-wrap: break-word; }
 .prose > * + * { margin-top: 1.1em; }
 .prose h2 { margin-top: 2em; font-size: 1.6rem; }
 .prose h3 { margin-top: 1.6em; font-size: 1.25rem; }
@@ -46,7 +46,7 @@ h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; letter-spacing:
 .prose code { padding: .1em .35em; border-radius: 4px; background: var(--surface); font: .9em var(--font-mono); }
 .prose pre { position: relative; overflow-x: auto; padding: 16px 18px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); line-height: 1.5; }
 .prose pre code { padding: 0; background: none; font-size: .88rem; }
-.prose table { width: 100%; border-collapse: collapse; }
+.prose table { display: block; overflow-x: auto; width: 100%; border-collapse: collapse; }
 .prose th, .prose td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: left; }
 .prose hr { border: 0; border-top: 1px solid var(--line); }
 .prose .footnotes { margin-top: 3em; color: var(--muted); font-size: .9rem; }
