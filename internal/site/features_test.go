@@ -264,3 +264,36 @@ func TestPaginationUnderBasePath(t *testing.T) {
 		t.Errorf("check: %v", problems)
 	}
 }
+
+// Under a base path, links written in Markdown get the prefix once, and
+// shortcode output (which uses relURL) and processed images are not
+// prefixed a second time.
+func TestBasePathWithShortcodesAndImages(t *testing.T) {
+	root := starter(t)
+	write(t, filepath.Join(root, "templates/shortcodes/go.html"), `<a class="go" href="{{ relURL (.Get "url") }}">{{ .InnerInline }}</a>`)
+	write(t, filepath.Join(root, "static/img/root.png"), testPNG(t, 40, 20))
+	write(t, filepath.Join(root, "content/writing/pics/index.md"), "---\ntitle: Pics\ndate: 2026-06-01\n---\n"+
+		"[home](/) and [about](/about/)\n\n"+
+		"{{< go url=\"/about/\" >}}About{{< /go >}}\n\n"+
+		"{{< note >}}Inner [link](/writing/).{{< /note >}}\n\n"+
+		"![bundle](bundle.png)\n\n![root](/img/root.png)\n")
+	write(t, filepath.Join(root, "content/writing/pics/bundle.png"), testPNG(t, 30, 30))
+	write(t, filepath.Join(root, "content/raw.html"), "---\ntitle: Raw\n---\n<a id=\"r\" href=\"/about/\">x</a> {{< go url=\"/writing/\" >}}W{{< /go >}}\n")
+	res, out := build(t, root, site.Options{BaseURL: "https://example.github.io/blog/"})
+	page := read(t, filepath.Join(out, "writing/pics/index.html"))
+	mustContain(t, "pics", page,
+		`<a href="/blog/">home</a>`, `<a href="/blog/about/">about</a>`,
+		`<a class="go" href="/blog/about/">About</a>`,
+		`<a href="/blog/writing/">link</a>`,
+		`src="/blog/_assets/images/writing/pics/bundle-`,
+		`src="/blog/_assets/images/img/root-`,
+	)
+	mustNotContain(t, "pics", page, "/blog/blog/")
+	raw := read(t, filepath.Join(out, "raw/index.html"))
+	mustContain(t, "raw", raw, `<a id="r" href="/blog/about/">x</a>`, `<a class="go" href="/blog/writing/">W</a>`)
+	mustNotContain(t, "raw", raw, "/blog/blog/")
+	problems, err := site.Check(out, res.Site.Config)
+	if err != nil || len(problems) != 0 {
+		t.Errorf("check: %v %v", err, problems)
+	}
+}

@@ -40,7 +40,7 @@ func (c *contentRenderer) renderPage(p *Page) error {
 		if err != nil {
 			return err
 		}
-		p.Content = template.HTML(withBasePath(rendered, c.site.Config.BasePath))
+		p.Content = template.HTML(rendered)
 		p.Summary = p.summary
 		return nil
 	}
@@ -52,12 +52,14 @@ func (c *contentRenderer) renderPage(p *Page) error {
 	if err != nil {
 		return err
 	}
-	rendered, err := c.processImages(p, r.HTML)
+	// The base path is added to root links the author wrote, before processed
+	// images and shortcode output (which already carry it) are inserted.
+	rendered, err := c.processImages(p, withBasePath(r.HTML, c.site.Config.BasePath))
 	if err != nil {
 		return err
 	}
 	rendered = substituteTokens(rendered, tokens)
-	p.Content = template.HTML(withBasePath(rendered, c.site.Config.BasePath))
+	p.Content = template.HTML(rendered)
 	p.Headings = r.Headings
 	p.WordCount = r.WordCount
 	p.Summary = firstNonEmpty(p.summary, cleanTokens(r.Summary, tokens))
@@ -75,7 +77,7 @@ func (c *contentRenderer) renderFragment(p *Page, src string, depth int) (string
 	if err != nil {
 		return "", err
 	}
-	rendered, err := c.processImages(p, r.HTML)
+	rendered, err := c.processImages(p, withBasePath(r.HTML, c.site.Config.BasePath))
 	if err != nil {
 		return "", err
 	}
@@ -88,7 +90,7 @@ func (c *contentRenderer) renderHTMLFragment(p *Page, src string, depth int) (st
 	if err != nil {
 		return "", err
 	}
-	return substituteTokens(expanded, tokens), nil
+	return substituteTokens(withBasePath(expanded, c.site.Config.BasePath), tokens), nil
 }
 
 var mdImage = regexp.MustCompile(`<img src="([^"]+)" alt="([^"]*)"( title="[^"]*")?\s*/?>`)
@@ -103,6 +105,10 @@ func (c *contentRenderer) processImages(p *Page, body string) (string, error) {
 	out := mdImage.ReplaceAllStringFunc(body, func(m string) string {
 		parts := mdImage.FindStringSubmatch(m)
 		src := html.UnescapeString(parts[1])
+		// Root paths already carry the base path at this point; look the file up without it.
+		if bp := c.site.Config.BasePath; bp != "" && strings.HasPrefix(src, bp+"/") {
+			src = strings.TrimPrefix(src, bp)
+		}
 		if strings.Contains(src, "://") || strings.HasPrefix(src, "//") || strings.HasPrefix(src, "data:") {
 			return m
 		}

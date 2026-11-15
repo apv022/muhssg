@@ -329,6 +329,10 @@ Go templates also have `len`, `index`, `slice`, `printf`, `eq`, `ne`, `lt`,
   so block HTML like `<div>` isn't wrapped in a `<p>`.
 - **Errors** name the file and line, e.g. an unknown shortcode or an unclosed
   `{{<`.
+- **Links in shortcode templates** should use `relURL` (e.g.
+  `href="{{ relURL (.Get "url") }}"`). muhssg adds the base path to root
+  links you write in Markdown, but leaves shortcode output as the template
+  wrote it.
 
 In a shortcode template, `.` is the shortcode:
 
