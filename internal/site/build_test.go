@@ -35,13 +35,15 @@ func build(t *testing.T, root string, opts site.Options) (*site.Result, string) 
 	return res, res.OutDir
 }
 
+// read returns a file's contents with line endings normalised to \n, so
+// tests that edit text behave the same on Windows checkouts.
 func read(t *testing.T, path string) string {
 	t.Helper()
 	b, err := os.ReadFile(path)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return string(b)
+	return strings.ReplaceAll(string(b), "\r\n", "\n")
 }
 
 func write(t *testing.T, path, content string) {

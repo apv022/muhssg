@@ -1,0 +1,6 @@
+# Keep LF line endings everywhere, so files embedded in the binary (the
+# starter site, built-in shortcodes) are identical on every OS.
+* text=auto eol=lf
+*.png binary
+*.ico binary
+*.jpg binary
