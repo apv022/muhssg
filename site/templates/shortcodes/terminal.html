@@ -1,0 +1,13 @@
+{{- /* {{< terminal label="install" result="…" serving="…" url="…" hint="…" note="Markdown" >}}
+one command per line
+{{< /terminal >}} */ -}}
+<section class="shell band" aria-labelledby="{{ .Get "label" }}">
+  <h2 id="{{ .Get "label" }}" class="label">{{ .Get "label" }}</h2>
+  <div class="term">
+    <div class="term-bar"><span></span><span></span><span></span><p>~</p></div>
+<pre><code>{{ range split "\n" .Inner }}<span class="p">$</span> {{ trim . }}
+{{ end }}<span class="ok">✓</span> {{ .Get "result" }}
+<span class="dim">{{ .Get "serving" }}</span> {{ .Get "url" }} <span class="dim">{{ .Get "hint" }}</span></code></pre>
+  </div>
+  <p class="note">{{ markdownInline (.Get "note") }}</p>
+</section>

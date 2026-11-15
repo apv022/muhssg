@@ -1,0 +1,15 @@
+{{- /* {{< folders label="…" root="my-site/" text="Markdown" link="…" url="…" >}}
+name | note   (one per line; note is optional)
+{{< /folders >}} */ -}}
+{{- $lines := split "\n" .Inner -}}{{- $last := sub (len $lines) 1 -}}
+<section class="shell band" aria-labelledby="layout">
+  <h2 id="layout" class="label">{{ .Get "label" }}</h2>
+  <div class="split">
+<pre class="tree"><code>{{ .Get "root" }}{{ range $i, $l := $lines }}{{ $parts := split " | " (trim $l) }}
+{{ if eq $i $last }}└──{{ else }}├──{{ end }} {{ if gt (len $parts) 1 }}{{ printf "%-14s" (index $parts 0) }}<span class="dim">{{ index $parts 1 }}</span>{{ else }}{{ index $parts 0 }}{{ end }}{{ end }}</code></pre>
+    <div>
+      <p>{{ markdownInline (.Get "text") }}</p>
+      <p><a href="{{ relURL (.Get "url") }}">{{ .Get "link" }}</a></p>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,9 @@
+{{- /* {{< hero alt="…" lede="…" >}} buttons {{< /hero >}}  (lede is inline Markdown; HTML allowed) */ -}}
+<section class="hero shell">
+  <h1 class="sr-only">{{ .Site.Title }}</h1>
+  <img class="hero-logo" src="{{ relURL "/img/logo.svg" }}" alt="{{ .Get "alt" }}" width="920" height="300">
+  <p class="hero-lede">{{ markdownInline (.Get "lede") }}</p>
+  <div class="hero-actions">
+    {{ .InnerHTML }}
+  </div>
+</section>

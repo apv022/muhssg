@@ -1,0 +1,12 @@
+{{- /* {{< themes label="…" alt="…" >}}Markdown{{< /themes >}} */ -}}
+<section class="shell band" aria-labelledby="themes">
+  <h2 id="themes" class="label">{{ .Get "label" }}</h2>
+  <div class="split">
+    <div>
+      {{ .InnerHTML }}
+<pre class="chroma"><code><span class="dim"># muhssg.yaml</span>
+theme: [<span class="crimson">solar</span>, default]</code></pre>
+    </div>
+    <img src="{{ relURL "/img/themes.png" }}" alt="{{ .Get "alt" }}" width="918" height="392" loading="lazy">
+  </div>
+</section>

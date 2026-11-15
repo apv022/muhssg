@@ -1,0 +1,2 @@
+{{- /* {{< button url="/docs/guide/" quiet="true" >}}Label{{< /button >}} */ -}}
+<a class="button{{ if eq (.Get "quiet") "true" }} button-quiet{{ end }}" href="{{ relURL (.Get "url") }}">{{ .InnerInline }}</a>

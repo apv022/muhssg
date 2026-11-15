@@ -1,0 +1,7 @@
+{{- /* {{< features label="what you get" >}} {{< feature >}}s {{< /features >}} */ -}}
+<section class="shell band" aria-labelledby="features">
+  <h2 id="features" class="label">{{ .Get "label" }}</h2>
+  <dl class="features">
+    {{ .InnerHTML }}
+  </dl>
+</section>
