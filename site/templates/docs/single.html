@@ -1,0 +1,30 @@
+{{ define "main" }}
+<div class="shell docs">
+  <aside class="docs-nav" aria-label="Docs">
+    <p class="label">docs</p>
+    <ul>
+      {{ range collection "docs" }}
+      <li><a href="{{ .URL }}"{{ if eq .Path $.Path }} aria-current="page"{{ end }}>{{ .Title }}</a></li>
+      {{ end }}
+    </ul>
+    {{ with .TOC }}
+    <p class="label">on this page</p>
+    <ul class="toc">
+      {{ range . }}{{ if le .Level 2 }}<li><a href="#{{ .ID }}">{{ .Text }}</a></li>{{ end }}{{ end }}
+    </ul>
+    {{ end }}
+  </aside>
+  <article class="docs-body">
+    <header>
+      <p class="label">docs / {{ lower .Title }}</p>
+      <h1>{{ .Title }}</h1>
+      {{ with .Description }}<p class="lede">{{ . }}</p>{{ end }}
+    </header>
+    <div class="prose">{{ .Content }}</div>
+    <nav class="pager" aria-label="More docs">
+      {{ with .Prev }}<a href="{{ .URL }}">← {{ .Title }}</a>{{ else }}<span></span>{{ end }}
+      {{ with .Next }}<a href="{{ .URL }}">{{ .Title }} →</a>{{ end }}
+    </nav>
+  </article>
+</div>
+{{ end }}

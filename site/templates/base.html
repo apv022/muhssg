@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="{{ .Site.Language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<title>{{ if .IsHome }}muhssg: a static site generator for personal sites{{ else }}{{ fullTitle . }}{{ end }}</title>
+{{ seo . }}
+{{- favicons }}
+{{ css "site.css" }}
+{{ css "syntax.css" }}
+{{ js "site.ts" }}
+</head>
+<body class="kind-{{ .Kind }}">
+<a class="skip-link" href="#main">Skip to content</a>
+{{ template "partials/header.html" . }}
+<main id="main">
+{{ block "main" . }}{{ end }}
+</main>
+{{ template "partials/footer.html" . }}
+</body>
+</html>

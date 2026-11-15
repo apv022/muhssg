@@ -1,0 +1,12 @@
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" href="{{ relURL "/" }}" aria-label="muhssg home"><span class="brand-prompt" aria-hidden="true">❯</span>muhssg<span class="brand-cursor" aria-hidden="true"></span></a>
+    <nav aria-label="Main">
+      <ul>
+        <li><a href="{{ relURL "/docs/guide/" }}"{{ if active . "/docs/guide/" }} aria-current="page"{{ end }}>Guide</a></li>
+        <li><a href="{{ relURL "/docs/reference/" }}"{{ if active . "/docs/reference/" }} aria-current="page"{{ end }}>Reference</a></li>
+        <li><a href="{{ .Site.Params.repo }}">GitHub<span aria-hidden="true"> ↗</span></a></li>
+      </ul>
+    </nav>
+  </div>
+</header>

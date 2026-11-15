@@ -1,0 +1,12 @@
+{{ define "main" }}
+<div class="shell narrow">
+  <p class="label">{{ lower .Title }}</p>
+  <h1>{{ .Title }}</h1>
+  <div class="prose">{{ .Content }}</div>
+  <ul class="doc-list">
+    {{ range .Pages }}
+    <li><a href="{{ .URL }}">{{ .Title }} →</a><p>{{ .Description }}</p></li>
+    {{ end }}
+  </ul>
+</div>
+{{ end }}

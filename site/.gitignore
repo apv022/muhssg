@@ -1,0 +1,5 @@
+dist/
+content/docs/*.md
+!content/docs/_index.md
+static/img/themes.png
+static/img/logo.svg

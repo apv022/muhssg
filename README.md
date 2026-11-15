@@ -4,7 +4,11 @@
 
 <p align="center">
   <b>A static site generator for personal sites.</b><br>
-  Markdown in, fast static HTML out. One binary, no Node, no runtime.
+  Markdown in, fast static HTML out. One binary, no Node, no runtime.<br>
+  <a href="https://apv022.github.io/muhssg/">Website</a> ·
+  <a href="https://apv022.github.io/muhssg/docs/guide/">Guide</a> ·
+  <a href="docs/reference.md">Reference</a> ·
+  <a href="https://github.com/apv022/muhssg/releases">Releases</a>
 </p>
 
 <p align="center">

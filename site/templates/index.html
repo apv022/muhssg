@@ -1,0 +1,70 @@
+{{ define "main" }}
+<section class="hero shell">
+  <h1 class="sr-only">muhssg</h1>
+  <img class="hero-logo" src="{{ relURL "/img/logo.svg" }}" alt="A terminal window with the word muhssg drawn in crimson pixel blocks" width="920" height="300">
+  <p class="hero-lede">A static site generator for personal sites.<br>Markdown in, fast static HTML out. <span class="sun">One binary.</span> No Node, no runtime.</p>
+  <div class="hero-actions">
+    <a class="button" href="{{ relURL "/docs/guide/" }}">Read the guide →</a>
+    <a class="button button-quiet" href="{{ .Site.Params.repo }}">View on GitHub ↗</a>
+  </div>
+</section>
+
+<section class="shell band" aria-labelledby="install">
+  <h2 id="install" class="label">install</h2>
+  <div class="term">
+    <div class="term-bar"><span></span><span></span><span></span><p>~</p></div>
+<pre><code><span class="p">$</span> go install github.com/apv022/muhssg@latest
+<span class="p">$</span> muhssg new site my-site && cd my-site
+<span class="p">$</span> muhssg serve
+<span class="ok">✓</span> built 9 pages in 226ms
+<span class="dim">serving my-site at</span> http://127.0.0.1:4321/ <span class="dim">— Ctrl+C to stop</span></code></pre>
+  </div>
+  <p class="note">Prefer a binary? Grab one for Linux, macOS or Windows from <a href="{{ .Site.Params.repo }}/releases">releases</a>.</p>
+</section>
+
+<section class="shell band" aria-labelledby="features">
+  <h2 id="features" class="label">what you get</h2>
+  <dl class="features">
+    <div><dt>Static first</dt><dd>Pages are plain HTML that works with JavaScript off. Add TypeScript only where a page needs to move.</dd></div>
+    <div><dt>Collections</dt><dd>Every folder in <code>content/</code> gets a list page, prev/next links, tags and an RSS feed.</dd></div>
+    <div><dt>Assets, bundled</dt><dd>CSS imports and JS/TS are bundled by esbuild, minified and content-hashed. npm packages work.</dd></div>
+    <div><dt>Swap the vibe</dt><dd>Themes stack. A theme can be one CSS file that restyles everything below it.</dd></div>
+    <div><dt>Highlighting</dt><dd>Code is coloured at build time, with separate light and dark styles and no JavaScript.</dd></div>
+    <div><dt>Favicons</dt><dd>One square image becomes the .ico, Apple and Android icons and a web manifest.</dd></div>
+    <div><dt>SEO, done</dt><dd>Canonical links, Open Graph tags, a sitemap, robots.txt and redirects.</dd></div>
+    <div><dt>Live reload</dt><dd><code>muhssg serve</code> rebuilds on save and shows build errors right on the page.</dd></div>
+    <div><dt>Safe builds</dt><dd>Output is swapped in only after a build succeeds. Deleted pages disappear.</dd></div>
+    <div><dt>Link checker</dt><dd><code>muhssg check</code> catches broken links and missing anchors.</dd></div>
+  </dl>
+</section>
+
+<section class="shell band" aria-labelledby="themes">
+  <h2 id="themes" class="label">one line, new look</h2>
+  <div class="split">
+    <div>
+      <p>The same page, before and after adding a theme that is a single CSS file of colour tokens:</p>
+<pre class="chroma"><code><span class="dim"># muhssg.yaml</span>
+theme: [<span class="crimson">solar</span>, default]</code></pre>
+    </div>
+    <img src="{{ relURL "/img/themes.png" }}" alt="A blog post in the default light theme beside the same post in the dark solar theme" width="918" height="392" loading="lazy">
+  </div>
+</section>
+
+<section class="shell band" aria-labelledby="layout">
+  <h2 id="layout" class="label">a site</h2>
+  <div class="split">
+<pre class="tree"><code>my-site/
+├── muhssg.yaml
+├── content/      <span class="dim">Markdown and HTML pages</span>
+├── templates/    <span class="dim">html/template layouts</span>
+├── assets/       <span class="dim">CSS, JS, TS: bundled</span>
+├── static/       <span class="dim">copied as-is</span>
+├── data/         <span class="dim">YAML and JSON</span>
+└── themes/       <span class="dim">layers of all of the above</span></code></pre>
+    <div>
+      <p>No config is required beyond a title. Every folder is optional, and each one does what its name says.</p>
+      <p><a href="{{ relURL "/docs/guide/" }}">Read the guide →</a></p>
+    </div>
+  </div>
+</section>
+{{ end }}

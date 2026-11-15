@@ -1,0 +1,7 @@
+{{ define "main" }}
+<div class="shell narrow">
+  <p class="label">{{ if eq .Kind "404" }}404{{ else }}{{ lower .Title }}{{ end }}</p>
+  <h1>{{ .Title }}</h1>
+  <div class="prose">{{ .Content }}</div>
+</div>
+{{ end }}
