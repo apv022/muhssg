@@ -12,7 +12,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/apv022/muhssg/actions/workflows/ci.yml"><img src="https://github.com/apv022/muhssg/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/apv022/muhssg/actions/workflows/ci.yml"><img src="https://github.com/apv022/muhssg/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-dc143c" alt="License: GPL-3.0"></a>
   <a href="go.mod"><img src="https://img.shields.io/badge/go-1.24+-ffb000" alt="Go 1.24+"></a>
 </p>
