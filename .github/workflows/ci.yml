@@ -17,9 +17,17 @@ jobs:
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
-      - name: gofmt
+      - name: gofmt (our code, not vendor/)
         if: runner.os == 'Linux'
-        run: test -z "$(gofmt -l .)" || (gofmt -l . && exit 1)
+        run: |
+          files=$(gofmt -l $(git ls-files '*.go' ':!:vendor/'))
+          test -z "$files" || (echo "$files" && exit 1)
+      - name: vendor/ matches go.mod and go.sum
+        if: runner.os == 'Linux'
+        run: |
+          go mod verify
+          go mod vendor
+          git diff --exit-code -- vendor go.mod go.sum
       - run: go vet ./...
       - run: go test -race ./...
       - name: Build the starter site

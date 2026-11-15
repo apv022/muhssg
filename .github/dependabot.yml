@@ -1,0 +1,20 @@
+# Weekly pull requests for dependency updates. Nothing merges on its own:
+# each PR runs CI and the vulnerability scan, and vendor/ is updated in the
+# same PR, so the diff shows exactly what changed in the dependency's code.
+version: 2
+updates:
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      go-dependencies:
+        patterns: ["*"]
+    open-pull-requests-limit: 5
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns: ["*"]

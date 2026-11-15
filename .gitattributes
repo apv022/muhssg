@@ -4,3 +4,6 @@
 *.png binary
 *.ico binary
 *.jpg binary
+
+# Vendored dependencies are kept byte-for-byte as `go mod vendor` writes them.
+vendor/** -text
