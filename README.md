@@ -14,7 +14,7 @@
 <p align="center">
   <a href="https://github.com/apv022/muhssg/actions/workflows/ci.yml"><img src="https://github.com/apv022/muhssg/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-GPL--3.0-dc143c" alt="License: GPL-3.0"></a>
-  <a href="go.mod"><img src="https://img.shields.io/badge/go-1.24+-ffb000" alt="Go 1.24+"></a>
+  <a href="go.mod"><img src="https://img.shields.io/badge/go-1.26+-ffb000" alt="Go 1.26+"></a>
 </p>
 
 ---
@@ -71,7 +71,7 @@ config and a different theme gives the whole site a new look.
 
 ## Install
 
-With Go 1.24 or newer:
+With Go 1.26 or newer (release binaries need no Go at all):
 
 ```sh
 go install github.com/apv022/muhssg@latest

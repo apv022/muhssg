@@ -520,19 +520,19 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: stable
       - id: pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
       - run: go install github.com/apv022/muhssg@latest
       - run: muhssg build --base-url "${{ steps.pages.outputs.base_url }}/"
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
           path: dist
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 ```
 
 `--base-url` makes every link work under `https://<you>.github.io/<repo>/`.
