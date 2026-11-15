@@ -60,7 +60,7 @@ config and a different theme gives the whole site a new look.
 | **Images** | Local images are resized into a responsive `srcset` with width/height and lazy loading. Phone photos are rotated correctly and stripped of metadata, including GPS location. |
 | **Pagination** | `paginate: 10` splits a collection or tag across `/writing/page/2/`, `/writing/page/3/` and so on. |
 | **Syntax highlighting** | Done at build time with no JavaScript, using separate light and dark styles. |
-| **Assets** | CSS `@import`s and JS/TS imports are bundled by [esbuild](https://esbuild.github.io), minified and given content-hashed file names. npm packages work if you install them. |
+| **Assets** | CSS `@import`s and JS/TS imports are bundled by [esbuild](https://esbuild.github.io), minified and given content-hashed file names. |
 | **Themes** | Layered folders: the site overrides the theme, and a theme can override another theme. A theme can be as small as one CSS file. |
 | **Favicons** | One square image becomes `favicon.ico`, the Apple touch icon, Android icons and a web manifest. |
 | **SEO** | Canonical links, Open Graph and Twitter tags, a sitemap and `robots.txt`, all generated for you. |
@@ -286,40 +286,9 @@ assets/
   left alone and served from `static/`.
 - Scripts are ES modules with code splitting, so code shared between entry
   points is downloaded once.
-- Run `npm install some-package` in your site and `import` it from TypeScript.
-  esbuild bundles it, and muhssg still doesn't need Node itself.
+- Imports can also resolve from a `node_modules/` folder if your site has one.
+  That's optional: muhssg itself never needs Node.
 - Production builds are minified. `muhssg serve` adds inline source maps.
-
-### Adding interactivity with Alpine.js
-
-[Alpine.js](https://alpinejs.dev) suits muhssg well: pages stay static HTML,
-and Alpine adds behaviour where you mark it. Install it with npm in your site
-folder:
-
-```sh
-npm install alpinejs
-```
-
-```ts
-// assets/app.ts
-import Alpine from "alpinejs";
-
-window.Alpine = Alpine;
-Alpine.start();
-```
-
-```html
-<!-- in any template or .html page -->
-<div x-data="{ open: false }">
-  <button @click="open = !open">Menu</button>
-  <nav x-show="open" x-cloak>…</nav>
-</div>
-```
-
-Add `[x-cloak] { display: none; }` to your CSS so hidden parts don't flash
-before Alpine starts. muhssg bundles Alpine into `app.ts`'s output (about
-56 KB minified). Commit `package.json` and `package-lock.json`, and have your
-host run `npm ci` before `muhssg build`. muhssg itself still doesn't need Node.
 
 ## Themes
 

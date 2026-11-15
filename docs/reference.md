@@ -426,10 +426,8 @@ name clashes. Then:
   `/_assets/<path>-<hash>.<ext>` and available through `asset`.
 - **A JS entry that imports CSS** also gets a stylesheet: `css "app.css"`
   works for `app.ts`.
-- **npm packages.** Packages in the site's `node_modules/` can be imported,
-  e.g. `npm install alpinejs`, then `import Alpine from "alpinejs"` in
-  `assets/app.ts`. Hosts that build for you need to run `npm ci` before
-  `muhssg build`.
+- **npm packages.** If a site has a `node_modules/` folder, imports can
+  resolve from it. This is optional: muhssg itself never needs Node.
 - **Highlighting CSS.** With `highlight:` configured, a `syntax.css` asset is
   generated unless you provide your own.
 
