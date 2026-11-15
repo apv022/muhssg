@@ -1,0 +1,5 @@
+# Header links. Available in templates as .Site.Data.nav
+- label: Writing
+  url: /writing/
+- label: About
+  url: /about/

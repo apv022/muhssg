@@ -1,0 +1,14 @@
+<header class="site-header">
+  <div class="shell header-inner">
+    <a class="brand" href="{{ relURL "/" }}">{{ .Site.Title }}</a>
+    {{ with .Site.Data.nav }}
+    <nav aria-label="Main">
+      <ul>
+        {{ range . }}
+        <li><a href="{{ relURL .url }}"{{ if active $ .url }} aria-current="page"{{ end }}>{{ .label }}</a></li>
+        {{ end }}
+      </ul>
+    </nav>
+    {{ end }}
+  </div>
+</header>

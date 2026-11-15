@@ -1,0 +1,14 @@
+{{ define "main" }}
+<section class="hero">
+  <h1>{{ .Site.Title }}</h1>
+  {{ with .Site.Params.tagline }}<p class="lede">{{ . }}</p>{{ end }}
+</section>
+<div class="prose">{{ .Content }}</div>
+{{ with collection "writing" }}
+<section class="section">
+  <h2 class="eyebrow">Latest writing</h2>
+  {{ template "partials/post-list.html" (first 5 .) }}
+  <p><a class="more" href="{{ relURL "/writing/" }}">All writing →</a></p>
+</section>
+{{ end }}
+{{ end }}

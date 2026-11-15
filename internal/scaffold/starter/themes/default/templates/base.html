@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="{{ .Site.Language }}">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ fullTitle . }}</title>
+{{ seo . }}
+{{- favicons }}
+{{ css "site.css" }}
+{{ if hasAsset "syntax.css" }}{{ css "syntax.css" }}{{ end }}
+{{ js "app.ts" }}
+{{ block "head" . }}{{ end }}
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+{{ template "partials/header.html" . }}
+<main id="main" class="shell">
+{{ block "main" . }}{{ end }}
+</main>
+{{ template "partials/footer.html" . }}
+</body>
+</html>

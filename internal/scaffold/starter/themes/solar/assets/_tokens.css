@@ -1,0 +1,32 @@
+/* "solar": a token-only theme. Put it before "default" in muhssg.yaml
+   (theme: [solar, default]) and the whole site turns sunny and crimson. */
+:root {
+  color-scheme: dark light;
+  --bg: #0b0b0b;
+  --surface: #161616;
+  --text: #ffe9b0;
+  --muted: #bfae86;
+  --line: #2a2a2a;
+  --accent: #ffb000;
+  --accent-text: #0b0b0b;
+  --brand: #dc143c;
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-body);
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --measure: 70ch;
+  --radius: 0;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fff7e0;
+    --surface: #fdecc0;
+    --text: #4b3a26;
+    --muted: #6e5a3c;
+    --line: #f0d9a0;
+    --accent: #a50f2d;
+    --accent-text: #fff7e0;
+    --brand: #a50f2d;
+  }
+}

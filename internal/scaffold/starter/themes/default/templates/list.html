@@ -1,0 +1,15 @@
+{{ define "main" }}
+<header class="page-header">
+  <h1>{{ .Title }}</h1>
+  {{ with .Description }}<p class="lede">{{ . }}</p>{{ end }}
+</header>
+{{ with .Content }}<div class="prose">{{ . }}</div>{{ end }}
+{{ range groupByYear .Pages }}
+<section class="section">
+  <h2 class="eyebrow">{{ .Year }}</h2>
+  {{ template "partials/post-list.html" .Pages }}
+</section>
+{{ else }}
+<p class="muted">Nothing published yet.</p>
+{{ end }}
+{{ end }}

@@ -1,0 +1,12 @@
+<footer class="site-footer">
+  <div class="shell footer-inner">
+    <p>{{ .Site.Title }}{{ with .Site.Params.tagline }} · {{ . }}{{ end }}</p>
+    {{ with .Site.Data.links }}
+    <ul class="footer-links">
+      {{ range . }}
+      <li><a href="{{ relURL .url }}">{{ .label }}</a></li>
+      {{ end }}
+    </ul>
+    {{ end }}
+  </div>
+</footer>

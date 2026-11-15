@@ -1,0 +1,12 @@
+{{/* Expects a list of pages as "." */}}
+<ul class="post-list">
+  {{ range . }}
+  <li>
+    <time datetime="{{ isoDate .Date }}">{{ date "Jan 2, 2006" .Date }}</time>
+    <div>
+      <a href="{{ .URL }}">{{ .Title }}</a>
+      {{ with .Description }}<p>{{ . }}</p>{{ end }}
+    </div>
+  </li>
+  {{ end }}
+</ul>

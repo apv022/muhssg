@@ -1,0 +1,43 @@
+# muhssg site config. Every key is optional except title.
+
+title: My Site
+baseURL: https://example.com     # used for canonical links, feeds and the sitemap
+language: en
+description: A personal site built with muhssg.
+author: Your Name
+# image: /og.png                 # default link-preview image (put it in static/)
+
+# Themes are folders under themes/. The first one wins, so a theme that only
+# ships assets/_tokens.css can change the whole look of the theme after it.
+# Try: theme: [solar, default]
+theme: [default]
+
+output: dist
+
+collections:
+  writing:
+    title: Writing
+    sort: date          # date (newest first), title, or weight
+    feed: true          # /writing/rss.xml
+    # feedPath: /rss.xml
+    # permalink: /writing/:year/:slug/
+
+# Old URLs that should send people somewhere else.
+redirects:
+  /blog/: /writing/
+
+# One square image (512x512 or larger) becomes favicon.ico, the Apple touch
+# icon, Android icons and a web manifest.
+favicon:
+  source: favicon.png
+  background: "#14120f"   # behind the Apple touch icon
+  themeColor: "#14120f"
+
+# Syntax highlighting for fenced code blocks. `muhssg styles` lists styles.
+highlight:
+  style: github
+  darkStyle: github-dark
+
+# Anything here is available in templates as .Site.Params.
+params:
+  tagline: Notes, projects and the occasional rant.

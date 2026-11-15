@@ -1,0 +1,7 @@
+{{ define "main" }}
+<header class="page-header">
+  <p class="eyebrow"><a href="{{ relURL "/tags/" }}">Tags</a></p>
+  <h1>#{{ .Title }}</h1>
+</header>
+{{ template "partials/post-list.html" .Pages }}
+{{ end }}

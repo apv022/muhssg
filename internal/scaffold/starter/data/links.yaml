@@ -1,0 +1,5 @@
+# Footer links. Available in templates as .Site.Data.links
+- label: RSS
+  url: /writing/rss.xml
+- label: GitHub
+  url: https://github.com/

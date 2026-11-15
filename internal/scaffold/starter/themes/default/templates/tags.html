@@ -1,0 +1,10 @@
+{{ define "main" }}
+<header class="page-header">
+  <h1>Tags</h1>
+</header>
+<ul class="tag-cloud">
+  {{ range .Site.Tags }}
+  <li><a href="{{ .URL }}">#{{ .Name }}</a> <span class="muted">{{ len .Pages }}</span></li>
+  {{ end }}
+</ul>
+{{ end }}

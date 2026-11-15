@@ -1,0 +1,26 @@
+{{ define "main" }}
+<article>
+  <header class="page-header">
+    <p class="eyebrow"><a href="{{ relURL (printf "/%s/" .Section) }}">{{ with .Site.Collection .Section }}{{ .Title }}{{ end }}</a></p>
+    <h1>{{ .Title }}</h1>
+    {{ with .Description }}<p class="lede">{{ . }}</p>{{ end }}
+    <p class="meta">
+      {{ if .HasDate }}<time datetime="{{ isoDate .Date }}">{{ date "January 2, 2006" .Date }}</time> · {{ end }}{{ .ReadingTime }} min read
+      {{ with .Tags }} · {{ range $i, $t := . }}{{ if $i }}, {{ end }}<a href="{{ tagURL $t }}">#{{ $t }}</a>{{ end }}{{ end }}
+    </p>
+  </header>
+  {{ if and .ShowTOC .TOC }}
+  <nav class="toc" aria-label="On this page">
+    <p class="eyebrow">On this page</p>
+    <ul>{{ range .TOC }}<li class="toc-{{ .Level }}"><a href="#{{ .ID }}">{{ .Text }}</a></li>{{ end }}</ul>
+  </nav>
+  {{ end }}
+  <div class="prose">{{ .Content }}</div>
+  {{ if or .Prev .Next }}
+  <nav class="pager" aria-label="More posts">
+    {{ with .Prev }}<a href="{{ .URL }}">← {{ .Title }}</a>{{ else }}<span></span>{{ end }}
+    {{ with .Next }}<a href="{{ .URL }}">{{ .Title }} →</a>{{ end }}
+  </nav>
+  {{ end }}
+</article>
+{{ end }}

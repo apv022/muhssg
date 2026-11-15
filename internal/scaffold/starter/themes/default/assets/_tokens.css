@@ -1,0 +1,31 @@
+/* Design tokens. A theme can replace just this file to change the whole
+   look while keeping the layout in site.css. */
+:root {
+  color-scheme: light dark;
+  --bg: #fbfaf7;
+  --surface: #f1efe9;
+  --text: #1d1b18;
+  --muted: #5f5a52;
+  --line: #e3dfd6;
+  --accent: #1f5fbf;
+  --accent-text: #ffffff;
+  --brand: var(--text);
+
+  --font-body: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-heading: var(--font-body);
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --measure: 70ch;
+  --radius: 6px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --surface: #1b1b1b;
+    --text: #ececec;
+    --muted: #a3a3a3;
+    --line: #2a2a2a;
+    --accent: #7ab4ff;
+    --accent-text: #0b0b0b;
+  }
+}
