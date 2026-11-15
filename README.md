@@ -184,9 +184,9 @@ muhssg picks the most specific template it finds:
 Partials live in `templates/partials/` and are included with
 `{{ template "partials/header.html" . }}`.
 
-There are 45 template functions, including `collection`, `first`,
+There are 49 template functions, including `collection`, `first`,
 `where`, `sortBy`, `groupByYear`, `date`, `markdown`, `truncate`, `asset`,
-`absURL`, `active` and `jsonify`. They're all listed in the
+`absURL`, `active`, `img`, `image` and `jsonify`. They're all listed in the
 [reference](docs/reference.md#template-functions).
 
 ## Shortcodes
@@ -289,6 +289,37 @@ assets/
 - Run `npm install some-package` in your site and `import` it from TypeScript.
   esbuild bundles it, and muhssg still doesn't need Node itself.
 - Production builds are minified. `muhssg serve` adds inline source maps.
+
+### Adding interactivity with Alpine.js
+
+[Alpine.js](https://alpinejs.dev) suits muhssg well: pages stay static HTML,
+and Alpine adds behaviour where you mark it. Install it with npm in your site
+folder:
+
+```sh
+npm install alpinejs
+```
+
+```ts
+// assets/app.ts
+import Alpine from "alpinejs";
+
+window.Alpine = Alpine;
+Alpine.start();
+```
+
+```html
+<!-- in any template or .html page -->
+<div x-data="{ open: false }">
+  <button @click="open = !open">Menu</button>
+  <nav x-show="open" x-cloak>…</nav>
+</div>
+```
+
+Add `[x-cloak] { display: none; }` to your CSS so hidden parts don't flash
+before Alpine starts. muhssg bundles Alpine into `app.ts`'s output (about
+56 KB minified). Commit `package.json` and `package-lock.json`, and have your
+host run `npm ci` before `muhssg build`. muhssg itself still doesn't need Node.
 
 ## Themes
 
