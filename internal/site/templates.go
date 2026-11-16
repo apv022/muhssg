@@ -224,6 +224,7 @@ type renderEnv struct {
 	favicons faviconSet
 	content  *contentRenderer
 	images   *imageProc
+	svgs     *svgInliner
 }
 
 // splitPageArg lets image functions take an optional page first:
@@ -407,6 +408,15 @@ func (e *renderEnv) funcs() template.FuncMap {
 		},
 		"errorf": func(format string, args ...any) (string, error) {
 			return "", fmt.Errorf(format, args...)
+		},
+
+		// inline SVG: {{ svg "logo.svg" (dict "class" "logo" "title" "Name") }}
+		"svg": func(args ...any) (template.HTML, error) {
+			p, ref, opts, err := svgArgs(args)
+			if err != nil {
+				return "", err
+			}
+			return e.svgs.inline(p, ref, opts)
 		},
 
 		// images

@@ -33,6 +33,7 @@ type Config struct {
 	Highlight   HighlightConfig             `yaml:"highlight"`
 	Markdown    MarkdownConfig              `yaml:"markdown"`
 	Images      ImagesConfig                `yaml:"images"`
+	Code        CodeConfig                  `yaml:"code"`
 	Paginate    int                         `yaml:"paginate"` // default page size for lists and tags; 0 = no pagination
 	Minify      *bool                       `yaml:"minify"`
 	Robots      *bool                       `yaml:"robots"`

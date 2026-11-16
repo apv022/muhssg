@@ -39,6 +39,10 @@ highlight:
   style: github
   darkStyle: github-dark
 
+# A "Copy" button on code blocks. Only pages with code load the (tiny) script.
+code:
+  copyButton: true
+
 # Local images in Markdown get resized into a responsive srcset, with
 # metadata (including GPS location) stripped.
 images:

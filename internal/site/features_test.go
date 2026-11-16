@@ -297,3 +297,90 @@ func TestBasePathWithShortcodesAndImages(t *testing.T) {
 		t.Errorf("check: %v %v", err, problems)
 	}
 }
+
+// ---- svg ------------------------------------------------------------------
+
+const testSVG = `<?xml version="1.0" encoding="UTF-8"?>
+<!-- a comment -->
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 64 32" width="64" class="orig" onload="alert(1)">
+  <title id="title">Old title</title>
+  <defs><linearGradient id="g"><stop offset="0"/></linearGradient></defs>
+  <script>alert(2)</script>
+  <path id="p" fill="currentColor" d="M0 0h10v10z" onclick="x()"/>
+  <rect fill="url(#g)" width="5" height="5"/>
+  <use xlink:href="#p" href="#p"/>
+  <a href="javascript:alert(3)"><circle r="2"/></a>
+</svg>`
+
+func TestSVGHelper(t *testing.T) {
+	root := starter(t)
+	write(t, filepath.Join(root, "assets/brand/mark.svg"), testSVG)
+	write(t, filepath.Join(root, "templates/page.html"), `{{ define "main" }}<div id="a">{{ svg "brand/mark.svg" (dict "class" "mark" "title" "Brand & Co" "height" "20") }}</div><div id="b">{{ svg "brand/mark.svg" }}</div>{{ end }}`)
+	_, out := build(t, root, site.Options{})
+	html := read(t, filepath.Join(out, "about/index.html"))
+	a := html[strings.Index(html, `<div id="a">`):strings.Index(html, `<div id="b">`)]
+	b := html[strings.Index(html, `<div id="b">`):]
+	mustContain(t, "first copy", a,
+		`viewBox="0 0 64 32"`, `class="orig mark"`, `height="20"`, `width="64"`, `role="img"`,
+		`fill="currentColor"`, `<title id="svg1-title">Brand &amp; Co</title>`, `aria-labelledby="svg1-title"`,
+		`id="svg1-g"`, `fill="url(#svg1-g)"`, `xlink:href="#svg1-p"`, `xmlns:xlink=`)
+	mustNotContain(t, "first copy", a, "<?xml", "<!--", "DOCTYPE", "<script", "alert", "onload", "onclick", "javascript:", "Old title")
+	mustContain(t, "second copy", b, `aria-hidden="true"`, `id="svg2-p"`, `<title id="svg2-title">Old title</title>`)
+	// No id appears twice on the page.
+	seen := map[string]bool{}
+	for _, m := range regexp.MustCompile(` id="([^"]+)"`).FindAllStringSubmatch(html, -1) {
+		if seen[m[1]] {
+			t.Errorf("duplicate id %q", m[1])
+		}
+		seen[m[1]] = true
+	}
+}
+
+func TestSVGHelperErrors(t *testing.T) {
+	cases := map[string]string{
+		`{{ svg "nope.svg" }}`:                     `image "nope.svg" not found`,
+		`{{ svg "img/x.png" }}`:                    `is not an .svg file`,
+		`{{ svg "bad.svg" }}`:                      `not <svg>`,
+		`{{ svg "ok.svg" (dict "colour" "red") }}`: `unknown option "colour"`,
+		`{{ svg }}`:                                `use {{ svg`,
+	}
+	for tmpl, want := range cases {
+		root := starter(t)
+		write(t, filepath.Join(root, "assets/bad.svg"), `<html><body/></html>`)
+		write(t, filepath.Join(root, "assets/ok.svg"), `<svg viewBox="0 0 1 1"/>`)
+		write(t, filepath.Join(root, "templates/page.html"), `{{ define "main" }}`+tmpl+`{{ end }}`)
+		if _, err := site.Build(site.Options{Root: root}); err == nil || !strings.Contains(err.Error(), want) {
+			t.Errorf("%s: err = %v, want %q", tmpl, err, want)
+		}
+	}
+}
+
+// ---- copy button ----------------------------------------------------------
+
+func TestCopyButton(t *testing.T) {
+	root := starter(t)
+	cfg := read(t, filepath.Join(root, "muhssg.yaml"))
+	cfg = strings.Replace(cfg, "code:\n  copyButton: true\n", "code:\n  copyButton: true\n  copyButtonSkip: [diagram]\n", 1)
+	write(t, filepath.Join(root, "muhssg.yaml"), cfg)
+	write(t, filepath.Join(root, "content/diagram.html"), "---\ntitle: Diagram\n---\n<pre class=\"diagram\"><code>a -> b</code></pre>\n")
+	_, out := build(t, root, site.Options{})
+	post := read(t, filepath.Join(out, "writing/hello-world/index.html"))
+	tag := regexp.MustCompile(`<script type="module" src="(/_assets/muhssg-copy-[0-9a-f]+\.js)"></script>\n</head>`).FindStringSubmatch(post)
+	if tag == nil {
+		t.Fatal("post with code has no copy script in <head>")
+	}
+	script := read(t, filepath.Join(out, filepath.FromSlash(tag[1])))
+	mustContain(t, "script", script, `const skip = ["diagram"];`, "navigator.clipboard", `"Selected"`, `"Copied"`)
+	for _, f := range []string{"about/index.html", "diagram/index.html", "index.html"} {
+		mustNotContain(t, f, read(t, filepath.Join(out, f)), "muhssg-copy")
+	}
+
+	// Off by default: no script anywhere.
+	write(t, filepath.Join(root, "muhssg.yaml"), strings.Replace(cfg, "copyButton: true", "copyButton: false", 1))
+	_, out = build(t, root, site.Options{})
+	mustNotContain(t, "post (off)", read(t, filepath.Join(out, "writing/hello-world/index.html")), "muhssg-copy")
+	if files, _ := filepath.Glob(filepath.Join(out, "_assets", "muhssg-copy-*.js")); len(files) != 0 {
+		t.Errorf("script written although the feature is off: %v", files)
+	}
+}

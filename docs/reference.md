@@ -67,6 +67,10 @@ highlight:
   lineNumbers: false
   disable: false
 
+code:
+  copyButton: false            # add a "Copy" button to code blocks (see below)
+  copyButtonSkip: [mermaid]    # <pre> classes that never get one
+
 markdown:
   unsafe: true                 # allow raw HTML in Markdown (default true: it's your content)
   typographer: true            # “smart quotes”, en–dashes and …
@@ -88,6 +92,30 @@ params:                        # anything; available as .Site.Params
 
 File paths in `favicon` are looked up in the site folder first, then in each
 theme.
+
+### Copy buttons
+
+With `code.copyButton: true`, every `<pre>` that holds a `<code>` gets a
+**Copy** button. Only pages that contain a code block load the script (about
+1 KB, written to `/_assets/muhssg-copy-<hash>.js`); other pages are untouched.
+It copies the code without line numbers or a trailing newline, uses the
+clipboard where the browser allows it (HTTPS or localhost) and otherwise
+selects the code so it can be copied by hand. The button is visible on hover
+and focus, and always on touch screens.
+
+Blocks whose `<pre>` has a class listed in `copyButtonSkip` are left alone.
+Each block is wrapped in `<div class="muhssg-code">` and the button is
+`<button class="muhssg-copy">`. Theme it with CSS variables, or style
+`.muhssg-copy` directly:
+
+```css
+.muhssg-code {
+  --muhssg-copy-fg: var(--muted);
+  --muhssg-copy-bg: var(--bg);
+  --muhssg-copy-border: var(--line);
+  --muhssg-copy-radius: 6px;
+}
+```
 
 ## Content files
 
@@ -254,9 +282,27 @@ chain with pipes: `{{ .Title | truncate 40 | upper }}`.
 | `js "app.ts"` | `<script type="module">` for a bundled asset |
 | `asset "img/logo.png"` | the hashed URL of any asset |
 | `hasAsset "syntax.css"` | whether an asset exists |
+| `svg "logo.svg" [dict]` | the SVG file's markup, inlined (see below) |
 
-`css`, `js` and `asset` stop the build with a clear error if the asset doesn't
-exist.
+`css`, `js`, `asset` and `svg` stop the build with a clear error if the file
+doesn't exist.
+
+`svg` puts an SVG's markup straight into the page, so `fill="currentColor"`
+follows the surrounding text colour and CSS can style its parts:
+
+```go-html-template
+{{ svg "brand/mark.svg" (dict "class" "mark" "title" "APV" "height" "24") }}
+{{ svg .Page "diagram.svg" }}   {{/* look next to the page first */}}
+```
+
+The file is found like an image: next to the page, then in `assets/`,
+`content/` and `static/`. The XML prolog, comments, `<script>`,
+`<foreignObject>`, `on…` attributes and `javascript:` links are removed. Ids
+are prefixed per copy (`svg1-…`, `svg2-…`) and references to them are
+rewritten, so the same icon can appear many times on a page. Options:
+`class` (added to the file's own), `width`, `height`, and `title`, which
+labels the image for screen readers (`role="img"`). Without a `title`
+option the SVG is treated as decoration and gets `aria-hidden="true"`.
 
 **URLs**
 

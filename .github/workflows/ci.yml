@@ -46,3 +46,33 @@ jobs:
         run: |
           go run . new site "$RUNNER_TEMP/demo"
           go run . check --root "$RUNNER_TEMP/demo"
+  install-script:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install the latest release
+        run: |
+          sh install.sh --dir "$RUNNER_TEMP/latest"
+          "$RUNNER_TEMP/latest/muhssg" version
+      - name: Install a pinned release from a pipe, like a build host does
+        run: |
+          cat install.sh | sh -s -- --version v0.2.1 --dir "$RUNNER_TEMP/pinned"
+          "$RUNNER_TEMP/pinned/muhssg" version | grep -q "v0.2.1"
+      - name: A checksum mismatch fails and installs nothing
+        run: |
+          set -eu
+          v=v0.2.1
+          case $RUNNER_OS in Linux) os=linux ;; macOS) os=darwin ;; esac
+          case $(uname -m) in x86_64) arch=amd64 ;; *) arch=arm64 ;; esac
+          name="muhssg_${v}_${os}_${arch}.tar.gz"
+          mkdir -p "$RUNNER_TEMP/fake/$v"
+          curl -fsSL -o "$RUNNER_TEMP/fake/$v/$name" "https://github.com/apv022/muhssg/releases/download/$v/$name"
+          echo "$(printf '0%.0s' $(seq 64))  $name" > "$RUNNER_TEMP/fake/$v/checksums.txt"
+          if MUHSSG_DOWNLOAD_BASE="file://$RUNNER_TEMP/fake" sh install.sh --version $v --dir "$RUNNER_TEMP/bad"; then
+            echo "install.sh accepted a bad checksum"; exit 1
+          fi
+          test ! -e "$RUNNER_TEMP/bad/muhssg"

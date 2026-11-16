@@ -60,6 +60,8 @@ config and a different theme gives the whole site a new look.
 | **Images** | Local images are resized into a responsive `srcset` with width/height and lazy loading. Phone photos are rotated correctly and stripped of metadata, including GPS location. |
 | **Pagination** | `paginate: 10` splits a collection or tag across `/writing/page/2/`, `/writing/page/3/` and so on. |
 | **Syntax highlighting** | Done at build time with no JavaScript, using separate light and dark styles. |
+| **Copy buttons** | `code.copyButton: true` adds a Copy button to code blocks. Only pages with code load the 1 KB script. |
+| **Inline SVG** | `{{ svg "logo.svg" }}` inlines an icon so it takes the text colour, with scripts stripped and ids kept unique. |
 | **Assets** | CSS `@import`s and JS/TS imports are bundled by [esbuild](https://esbuild.github.io), minified and given content-hashed file names. |
 | **Themes** | Layered folders: the site overrides the theme, and a theme can override another theme. A theme can be as small as one CSS file. |
 | **Favicons** | One square image becomes `favicon.ico`, the Apple touch icon, Android icons and a web manifest. |
@@ -79,6 +81,14 @@ go install github.com/apv022/muhssg@latest
 
 Or download a binary for Linux, macOS or Windows from
 [Releases](https://github.com/apv022/muhssg/releases) and put it on your `PATH`.
+On Linux and macOS, `install.sh` does that for you and checks the download
+against the release's checksums:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/apv022/muhssg/main/install.sh | sh -s -- --version v0.2.2 --dir ~/.local/bin
+```
+
+Leave out `--version` for the latest release. `--dir` defaults to `./bin`.
 
 ## A site, folder by folder
 
@@ -346,14 +356,47 @@ redirect pages plus a `_redirects` file.
 
 ## Deploying
 
-The output is plain files, so any static host works. On hosts that build
-for you, install muhssg in the build command:
+The output is plain files, so any static host works. Hosts that build for
+you (Vercel, Netlify, Cloudflare Pages) don't have Go, so the build command
+fetches a release binary with `install.sh`, which checks it against the
+release's checksums and stops the build if they don't match. Pin the
+version, in both the URL and `--version`, so every deploy builds with the
+same muhssg; bump it when you choose to upgrade.
 
-| Host | Build command | Output folder |
-| --- | --- | --- |
-| Cloudflare Pages, Netlify | `go install github.com/apv022/muhssg@latest && $(go env GOPATH)/bin/muhssg build` | `dist` |
-| GitHub Pages | the [workflow in the reference](docs/reference.md#github-pages) | `dist` |
-| Anything else | run `muhssg build` and upload `dist/` | `dist` |
+**Vercel**, `vercel.json`:
+
+```json
+{
+  "framework": null,
+  "buildCommand": "curl -fsSL https://raw.githubusercontent.com/apv022/muhssg/v0.2.2/install.sh | sh -s -- --version v0.2.2 && ./bin/muhssg build",
+  "outputDirectory": "dist"
+}
+```
+
+**Netlify**, `netlify.toml`:
+
+```toml
+[build]
+  command = "curl -fsSL https://raw.githubusercontent.com/apv022/muhssg/v0.2.2/install.sh | sh -s -- --version v0.2.2 && ./bin/muhssg build"
+  publish = "dist"
+```
+
+muhssg also writes a `_redirects` file, which Netlify reads.
+
+**Cloudflare Pages**: in the project's build settings, set the framework
+preset to *None*, the build command to
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/apv022/muhssg/v0.2.2/install.sh | sh -s -- --version v0.2.2 && ./bin/muhssg build
+```
+
+and the build output directory to `dist`.
+
+**GitHub Pages**: use the [workflow in the reference](docs/reference.md#github-pages).
+
+**Anywhere else**: run `muhssg build` and upload `dist/`.
+
+Add `bin/` to `.gitignore` if you also run the install script locally.
 
 For a site served from a subfolder, such as `https://you.github.io/blog/`, put
 the full URL in `baseURL`. Page URLs (`.URL`), asset URLs, feeds, redirects

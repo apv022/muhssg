@@ -126,8 +126,8 @@ func TestStarterSiteBuilds(t *testing.T) {
 	if !regexp.MustCompile(`<link rel="stylesheet" href="/_assets/site-[A-Z0-9]+\.css">`).MatchString(post) {
 		t.Error("post does not link a hashed site.css")
 	}
-	if !regexp.MustCompile(`<script type="module" src="/_assets/app-[A-Z0-9]+\.js"></script>`).MatchString(post) {
-		t.Error("post does not load a hashed app.js")
+	if !regexp.MustCompile(`<script type="module" src="/_assets/muhssg-copy-[0-9a-f]+\.js"></script>`).MatchString(post) {
+		t.Error("post with code blocks does not load the copy-button script")
 	}
 
 	// CSS @imports are bundled, TypeScript is compiled.
@@ -138,10 +138,7 @@ func TestStarterSiteBuilds(t *testing.T) {
 	css := read(t, matches[0])
 	mustContain(t, "site.css", css, "--bg:")
 	mustNotContain(t, "site.css", css, "@import")
-	js, _ := filepath.Glob(filepath.Join(out, "_assets", "app-*.js"))
-	if len(js) != 1 || strings.Contains(read(t, js[0]), ": string") {
-		t.Errorf("app.ts not compiled: %v", js)
-	}
+	mustNotContain(t, "about", read(t, filepath.Join(out, "about/index.html")), "muhssg-copy")
 	syntax, _ := filepath.Glob(filepath.Join(out, "_assets", "syntax-*.css"))
 	if len(syntax) != 1 {
 		t.Fatalf("syntax css: %v", syntax)
@@ -355,6 +352,20 @@ func TestCSSURLsAndRootPaths(t *testing.T) {
 	about := read(t, filepath.Join(out, "about/index.html"))
 	if !regexp.MustCompile(`src="/_assets/img/dot-[0-9a-f]{8}\.png"`).MatchString(about) {
 		t.Errorf("asset() did not return a hashed URL")
+	}
+}
+
+func TestTypeScriptIsBundled(t *testing.T) {
+	root := starter(t)
+	write(t, filepath.Join(root, "assets/app.ts"), "const greet = (name: string): string => `hi ${name}`;\nconsole.log(greet(\"x\"));\n")
+	write(t, filepath.Join(root, "templates/page.html"), `{{ define "main" }}{{ js "app.ts" }}{{ end }}`)
+	_, out := build(t, root, site.Options{})
+	if !regexp.MustCompile(`<script type="module" src="/_assets/app-[A-Z0-9]+\.js"></script>`).MatchString(read(t, filepath.Join(out, "about/index.html"))) {
+		t.Error("about does not load the hashed app.js")
+	}
+	js, _ := filepath.Glob(filepath.Join(out, "_assets", "app-*.js"))
+	if len(js) != 1 || strings.Contains(read(t, js[0]), ": string") {
+		t.Errorf("app.ts not compiled: %v", js)
 	}
 }
 

@@ -176,7 +176,7 @@ func render(cfg *Config, out string, opts Options, res *Result) (*Site, error) {
 		return nil, err
 	}
 	images := newImageProc(cfg, out)
-	env := &renderEnv{site: site, manifest: manifest, favicons: favs, images: images}
+	env := &renderEnv{site: site, manifest: manifest, favicons: favs, images: images, svgs: newSVGInliner(images)}
 	content := &contentRenderer{site: site, md: newMarkdown(cfg), images: images}
 	env.content = content
 	tmpl, err := parseTemplates(sources, env.funcs())
@@ -189,11 +189,20 @@ func render(cfg *Config, out string, opts Options, res *Result) (*Site, error) {
 	}
 
 	// 5. Pages.
+	copyTag := ""
+	if cfg.Code.CopyButton {
+		if copyTag, err = writeCopyButton(cfg, out); err != nil {
+			return nil, err
+		}
+	}
 	taken := map[string]bool{}
 	for _, p := range site.Pages {
 		html, err := tmpl.render(p)
 		if err != nil {
 			return nil, err
+		}
+		if copyTag != "" && hasCodeBlock(html, cfg.Code.CopyButtonSkip) {
+			html = injectBeforeHeadEnd(html, copyTag)
 		}
 		file := outputFile(p.Path)
 		dst := filepath.Join(out, file)

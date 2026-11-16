@@ -84,8 +84,8 @@ h1, h2, h3 { font-family: var(--font-heading); line-height: 1.2; letter-spacing:
 .prose summary { cursor: pointer; font-weight: 600; }
 .embed { overflow: hidden; border-radius: var(--radius); background: var(--surface); }
 
-.copy-button { position: absolute; top: 8px; right: 8px; padding: 3px 8px; border: 1px solid var(--line); border-radius: 4px; background: var(--bg); color: var(--muted); font: .75rem var(--font-mono); cursor: pointer; opacity: 0; transition: opacity .15s; }
-pre:hover .copy-button, .copy-button:focus-visible { opacity: 1; }
+/* The built-in copy button (code.copyButton in muhssg.yaml), themed to match. */
+.muhssg-code { --muhssg-copy-bg: var(--bg); --muhssg-copy-fg: var(--muted); --muhssg-copy-border: var(--line); }
 
 @media (max-width: 640px) {
   .post-list li { grid-template-columns: 1fr; gap: 2px; }
